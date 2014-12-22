@@ -56,6 +56,7 @@ class WSUWP_SSL {
 	 */
 	public function __construct() {
 		add_action( 'wpmu_new_blog', array( $this, 'determine_new_site_ssl' ), 10, 3 );
+		add_filter( 'parent_file', array( $this, 'ssl_admin_menu' ), 11, 1 );
 	}
 
 	/**
@@ -82,6 +83,33 @@ class WSUWP_SSL {
 		}
 	}
 
+	/**
+	 * Filter the submenu global to add a 'Manage Site SSL' link.
+	 *
+	 * @param string $parent_file Parent file of a menu subsection.
+	 *
+	 * @return string Parent file of a menu subsection.
+	 */
+	public function ssl_admin_menu( $parent_file ) {
+		global $self, $submenu, $submenu_file;
+
+		if ( wsuwp_get_current_network()->id == wsuwp_get_primary_network_id() ) {
+			$submenu['sites.php'][15] = array(
+				'Manage Site SSL',
+				'manage_sites',
+				'site-new.php?display=ssl',
+			);
+		}
+
+		if ( isset( $_GET['display'] ) && 'ssl' === $_GET['display'] ) {
+			$self = 'site-new.php?display=ssl';
+			$parent_file = 'sites.php';
+			$submenu_file = 'site-new.php?display=ssl';
+		}
+
+		return $parent_file;
+	}
+	
 	/**
 	 * Given a server name, generate a private key and a matching CSR so that a
 	 * certificate can be requested.
