@@ -69,15 +69,42 @@ class WSUWP_SSL {
 			return false;
 		}
 
+		if ( false === $this->validate_domain( $server_name ) ) {
+			return false;
+		}
+
+		$server_name = strtolower( $server_name );
+
 		$this->dn['commonName'] = $server_name;
 
+		// Generate the private key.
 		$this->private_key = openssl_pkey_new();
+
+		// Generate a certificate signing request.
 		$this->csr = openssl_csr_new( $this->dn, $this->private_key, $this->config );
 
+		// Export the key and CSR to disk for later use.
 		openssl_csr_export_to_file( $this->csr, '/home/www-data/' . $server_name . '.csr' );
 		openssl_pkey_export_to_file( $this->private_key, '/home/www-data/' . $server_name . '.key' );
 
 		return true;
+	}
+
+	/**
+	 * Validate a domain against a set of allowed characters.
+	 *
+	 * Allowed characters are a-z, A-Z, 0-9, -, and .
+	 *
+	 * @param string $domain Domain to validate
+	 *
+	 * @return bool True if valid, false if not.
+	 */
+	function validate_domain( $domain ) {
+		if ( preg_match( '|^([a-zA-Z0-9-.])+$|', $domain ) ) {
+			return true;
+		}
+
+		return false;
 	}
 }
 $wsuwp_ssl = new WSUWP_SSL();
