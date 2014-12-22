@@ -122,9 +122,7 @@ class WSUWP_SSL {
 		/* @type WPDB $wpdb */
 		global $wpdb;
 
-		$query_string = like_escape( '_ssl_disabled' );
-
-		$domains = $wpdb->get_results( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE '%{$query_string}'" );
+		$domains = $wpdb->get_results( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE '%_ssl_disabled'" );
 		$domains = wp_list_pluck( $domains, 'option_name' );
 		$domains = array_map( array( $this, 'strip_domain' ), $domains );
 
