@@ -179,7 +179,12 @@ class WSUWP_SSL {
 			<table class="form-table">
 				<?php
 				foreach( $this->get_ssl_disabled_domains() as $domain ) {
-					?><tr><td><span id="<?php echo md5( $domain ); ?>" data-domain="<?php echo esc_attr( $domain ); ?>" class="confirm_ssl">Confirm</span></td><td><?php echo esc_html( $domain ); ?></td></tr><?php
+					if ( file_exists( '/home/www-data/' . $domain . '.csr' ) ) {
+						$action_text = 'View CSR';
+					} else {
+						$action_text = 'Unavailable';
+					}
+					?><tr><td><span id="<?php echo md5( $domain ); ?>" data-domain="<?php echo esc_attr( $domain ); ?>" class="confirm_ssl"><?php echo $action_text; ?></span></td><td><?php echo esc_html( $domain ); ?></td></tr><?php
 				}
 				?>
 				<tr><td><label for="add_domain">Generate a CSR:</label></td><td>
