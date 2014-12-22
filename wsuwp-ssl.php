@@ -182,9 +182,10 @@ class WSUWP_SSL {
 					?><tr><td><span id="<?php echo md5( $domain ); ?>" data-domain="<?php echo esc_attr( $domain ); ?>" class="confirm_ssl">Confirm</span></td><td><?php echo esc_html( $domain ); ?></td></tr><?php
 				}
 				?>
-				<tr><td><label for="add_domain">Add Unconfirmed SSL Domain:</label></td><td>
+				<tr><td><label for="add_domain">Generate a CSR:</label></td><td>
 						<input name="add_domain" id="add-domain" class="regular-text" value="" />
-						<input type="button" id="submit-add-domain" class="button button-primary" value="Add Domain" />
+						<input type="button" id="submit-add-domain" class="button button-primary" value="Get CSR" />
+						<p class="description">Enter a domain name here to generate a <a href="http://en.wikipedia.org/wiki/Certificate_signing_request">CSR</a> to be used for obtaining a new <a href="http://en.wikipedia.org/wiki/Public_key_certificate">public key certificate</a> through InCommon's <a href="https://cert-manager.com/customer/InCommon/ssl?action=enroll">cert manager</a>.</p>
 					</td></tr>
 			</table>
 		</div>
