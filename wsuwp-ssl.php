@@ -82,12 +82,13 @@ class WSUWP_SSL {
 		if ( ! $domain_exists ) {
 			switch_to_blog( 1 );
 			update_option( $domain . '_ssl_disabled', 1 );
+			$this->generate_csr( $domain );
 			restore_current_blog();
 		}
 	}
 
 	/**
-	 * Filter the submenu global to add a 'Manage Site SSL' link.
+	 * Filter the submenu global to add a 'Manage Site SSL' link for the primary network.
 	 *
 	 * @param string $parent_file Parent file of a menu subsection.
 	 *
@@ -242,6 +243,9 @@ class WSUWP_SSL {
 			restore_current_blog();
 
 			$domain_sites = $wpdb->get_results( $wpdb->prepare( "SELECT domain, path FROM $wpdb->blogs WHERE domain = %s", $_POST['domain'] ) );
+
+			// If we're unconfirming, it's because we want to create a new certificate.
+			$this->generate_csr( $_POST['domain'] );
 
 			// Clear site cache on each unconfirmed domain.
 			foreach( $domain_sites as $cached_site ) {
