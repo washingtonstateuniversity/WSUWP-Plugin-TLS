@@ -219,6 +219,12 @@ class WSUWP_SSL {
 						<p class="description">Enter a domain name here to generate a <a href="http://en.wikipedia.org/wiki/Certificate_signing_request">CSR</a> to be used for obtaining a new <a href="http://en.wikipedia.org/wiki/Public_key_certificate">public key certificate</a> through InCommon's <a href="https://cert-manager.com/customer/InCommon/ssl?action=enroll">cert manager</a>.</p>
 					</td></tr>
 			</table>
+			<h3><?php _e( 'Upload Certificate' ); ?></h3>
+			<p class="description">Upload the standard x.509 certificate from InCommon. Do not use a certificate that includes any intermediate or root certificate information.</p>
+			<form method="POST">
+				<input type="file" name="cer_filename">
+				<input type="submit" value="Upload">
+			</form>
 			<div id="view-csr-container" style="display: none;"></div>
 		</div>
 
