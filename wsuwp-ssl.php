@@ -156,7 +156,7 @@ class WSUWP_SSL {
 
 		$title = __('Manage Site SSL');
 
-		wp_enqueue_script( 'wsu-ssl', plugins_url( '/js/wsu-ssl-site.js', __FILE__ ), array( 'jquery' ), wsuwp_global_version(), true );
+		wp_enqueue_script( 'wsu-ssl', plugins_url( '/js/wsu-ssl-site.min.js', __FILE__ ), array( 'jquery' ), wsuwp_global_version(), true );
 
 		require( ABSPATH . 'wp-admin/admin-header.php' );
 
