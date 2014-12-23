@@ -16,8 +16,11 @@
 		}
 	}
 
+	/**
+	 * Fire an ajax call to WordPress to find the generated CSR for display.
+	 */
 	function view_csr() {
-		var domain = $(this).attr('data-domain');
+		domain = $(this).attr('data-domain');
 
 		var ajax_nonce = $('#ssl_ajax_nonce').val();
 
@@ -29,6 +32,11 @@
 		$.post(ajaxurl,data,view_csr_response);
 	}
 
+	/**
+	 * Handle the response to the ajax request for viewing a CSR.
+	 *
+	 * @param response
+	 */
 	function view_csr_response( response ) {
 		response = $.parseJSON( response );
 		if ( response.success ) {
@@ -37,10 +45,18 @@
 		}
 	}
 
+	/**
+	 * Hide the container used to view the CSR.
+	 */
 	function remove_csr_response() {
 		$('#view-csr-container' ).html('' ).hide();
 	}
 
+	/**
+	 * Generate a CSR for a new domain, outside of the new site creation process.
+	 *
+	 * @param domain
+	 */
 	function unconfirm_ssl_domain( domain ) {
 		var ajax_nonce = $('#ssl_ajax_nonce' ).val();
 		var data = {
@@ -51,6 +67,11 @@
 		$.post(ajaxurl,data,handle_unconfirm_response);
 	}
 
+	/**
+	 * Handle the response from the ajax call used to request a new CSR.
+	 *
+	 * @param response
+	 */
 	function handle_unconfirm_response( response ) {
 		response = $.parseJSON( response );
 		if ( response.success ) {
@@ -59,6 +80,11 @@
 		}
 	}
 
+	/**
+	 * Close out an SSL request for a domain via ajax callback.
+	 *
+	 * @param domain
+	 */
 	function confirm_ssl_domain( domain ) {
 		var ajax_nonce = $('#ssl_ajax_nonce' ).val();
 		var data = {
@@ -69,6 +95,11 @@
 		$.post(ajaxurl,data,handle_confirm_response);
 	}
 
+	/**
+	 * Handle the response from the ajax call used to close an SSL request.
+	 *
+	 * @param response
+	 */
 	function handle_confirm_response( response ) {
 		response = $.parseJSON( response );
 		if ( response.success ) {
