@@ -1,3 +1,4 @@
+/*globals confirm, ajaxurl */
 (function($,ajaxurl, window){
 	var domain;
 	var row;
