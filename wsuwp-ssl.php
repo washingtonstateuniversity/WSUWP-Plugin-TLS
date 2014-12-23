@@ -60,6 +60,7 @@ class WSUWP_SSL {
 		add_action( 'load-site-new.php', array( $this, 'ssl_sites_display' ), 1 );
 		add_action( 'wp_ajax_confirm_ssl', array( $this, 'confirm_ssl_ajax' ), 10 );
 		add_action( 'wp_ajax_unconfirm_ssl', array( $this, 'unconfirm_ssl_ajax' ), 10 );
+		add_action( 'wp_ajax_view_csr', array( $this, 'view_csr_ajax' ), 10 );
 	}
 
 	/**
@@ -82,12 +83,13 @@ class WSUWP_SSL {
 		if ( ! $domain_exists ) {
 			switch_to_blog( 1 );
 			update_option( $domain . '_ssl_disabled', 1 );
+			$this->generate_csr( $domain );
 			restore_current_blog();
 		}
 	}
 
 	/**
-	 * Filter the submenu global to add a 'Manage Site SSL' link.
+	 * Filter the submenu global to add a 'Manage Site SSL' link for the primary network.
 	 *
 	 * @param string $parent_file Parent file of a menu subsection.
 	 *
@@ -122,9 +124,7 @@ class WSUWP_SSL {
 		/* @type WPDB $wpdb */
 		global $wpdb;
 
-		$query_string = like_escape( '_ssl_disabled' );
-
-		$domains = $wpdb->get_results( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE '%{$query_string}'" );
+		$domains = $wpdb->get_results( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE '%_ssl_disabled'" );
 		$domains = wp_list_pluck( $domains, 'option_name' );
 		$domains = array_map( array( $this, 'strip_domain' ), $domains );
 
@@ -156,13 +156,36 @@ class WSUWP_SSL {
 
 		$title = __('Manage Site SSL');
 
-		wp_enqueue_script( 'wsu-ssl', plugins_url( '/js/wsu-ssl-site.js', __FILE__ ), array( 'jquery' ), wsuwp_global_version(), true );
+		wp_enqueue_script( 'wsu-ssl', plugins_url( '/js/wsu-ssl-site.min.js', __FILE__ ), array( 'jquery' ), wsuwp_global_version(), true );
 
 		require( ABSPATH . 'wp-admin/admin-header.php' );
 
 		?>
 		<style>
-			.confirm_ssl {
+			#view-csr-container {
+				position: absolute;
+				top: 10px;
+				left: 0;
+				min-height: 415px;
+				border: 0;
+				background-color: rgba(25,25,25,0.95);
+				padding: 30px;
+			}
+			#view-csr-container textarea {
+				min-height: 415px;
+				min-width: 625px;
+				padding: 15px;
+			}
+			#csr-close {
+				position: absolute;
+				top: 4px;
+				right: 7px;
+				font-size: 1rem;
+				color: #fff;
+				font-family: Dashicons;
+				cursor: pointer;
+			}
+			.confirm_ssl, .view_csr {
 				text-decoration: underline;
 				color: blue;
 				cursor: pointer;
@@ -180,14 +203,23 @@ class WSUWP_SSL {
 			<table class="form-table">
 				<?php
 				foreach( $this->get_ssl_disabled_domains() as $domain ) {
-					?><tr><td><span id="<?php echo md5( $domain ); ?>" data-domain="<?php echo esc_attr( $domain ); ?>" class="confirm_ssl">Confirm</span></td><td><?php echo esc_html( $domain ); ?></td></tr><?php
+					if ( file_exists( '/home/www-data/' . $domain . '.csr' ) ) {
+						$action_text = 'View CSR';
+						$action_class = 'view_csr';
+					} else {
+						$action_text = 'Unavailable';
+						$action_class = 'confirm_ssl';
+					}
+					?><tr><td><span id="<?php echo md5( $domain ); ?>" data-domain="<?php echo esc_attr( $domain ); ?>" class="<?php echo $action_class; ?>"><?php echo $action_text; ?></span></td><td><?php echo esc_html( $domain ); ?></td></tr><?php
 				}
 				?>
-				<tr><td><label for="add_domain">Add Unconfirmed SSL Domain:</label></td><td>
+				<tr><td><label for="add_domain">Generate a CSR:</label></td><td>
 						<input name="add_domain" id="add-domain" class="regular-text" value="" />
-						<input type="button" id="submit-add-domain" class="button button-primary" value="Add Domain" />
+						<input type="button" id="submit-add-domain" class="button button-primary" value="Get CSR" />
+						<p class="description">Enter a domain name here to generate a <a href="http://en.wikipedia.org/wiki/Certificate_signing_request">CSR</a> to be used for obtaining a new <a href="http://en.wikipedia.org/wiki/Public_key_certificate">public key certificate</a> through InCommon's <a href="https://cert-manager.com/customer/InCommon/ssl?action=enroll">cert manager</a>.</p>
 					</td></tr>
 			</table>
+			<div id="view-csr-container" style="display: none;"></div>
 		</div>
 
 		<?php
@@ -245,6 +277,9 @@ class WSUWP_SSL {
 
 			$domain_sites = $wpdb->get_results( $wpdb->prepare( "SELECT domain, path FROM $wpdb->blogs WHERE domain = %s", $_POST['domain'] ) );
 
+			// If we're unconfirming, it's because we want to create a new certificate.
+			$this->generate_csr( $_POST['domain'] );
+
 			// Clear site cache on each unconfirmed domain.
 			foreach( $domain_sites as $cached_site ) {
 				wp_cache_delete( $cached_site->domain . $cached_site->path, 'wsuwp:site' );
@@ -253,6 +288,23 @@ class WSUWP_SSL {
 			$response = json_encode( array( 'success' => trim( $_POST['domain'] ) ) );
 		} else {
 			$response = json_encode( array( 'error' => 'Invalid domain.' ) );
+		}
+
+		echo $response;
+		die();
+	}
+
+	/**
+	 * Handle an AJAX request to retrieve and view the CSR for a domain.
+	 */
+	public function view_csr_ajax() {
+		check_ajax_referer( 'confirm-ssl', 'ajax_nonce' );
+
+		if ( true === $this->validate_domain( $_POST['domain'] ) && file_exists( '/home/www-data/' . $_POST['domain'] . '.csr' ) ) {
+			$csr_data = file_get_contents( '/home/www-data/' . $_POST['domain'] . '.csr' );
+			$response = json_encode( array( 'success' => $csr_data ) );
+		} else {
+			$response = json_encode( array( 'error' => 'No CSR is available for this domain.' ) );
 		}
 
 		echo $response;
