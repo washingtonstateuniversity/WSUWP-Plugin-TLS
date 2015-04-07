@@ -1,14 +1,14 @@
 <?php
 /*
-Plugin Name: WSUWP SSL
+Plugin Name: WSUWP TLS
 Version: 0.0.0
-Plugin URI: http://web.wsu.edu
-Description: Manage SSL within the WSUWP Platform
+Plugin URI: https://web.wsu.edu/
+Description: Manage TLS within the WSUWP Platform
 Author: washingtonstateuniversity, jeremyfelt
-Author URI: http://web.wsu.edu
+Author URI: https://web.wsu.edu/
 */
 
-class WSUWP_SSL {
+class WSUWP_TLS {
 
 	/**
 	 * Store the configuration used to generate CSRs with openSSL.
@@ -55,26 +55,26 @@ class WSUWP_SSL {
 	 * Setup the class.
 	 */
 	public function __construct() {
-		add_action( 'wpmu_new_blog', array( $this, 'determine_new_site_ssl' ), 10, 3 );
-		add_filter( 'parent_file', array( $this, 'ssl_admin_menu' ), 11, 1 );
-		add_action( 'load-site-new.php', array( $this, 'ssl_sites_display' ), 1 );
-		add_action( 'wp_ajax_confirm_ssl', array( $this, 'confirm_ssl_ajax' ), 10 );
-		add_action( 'wp_ajax_unconfirm_ssl', array( $this, 'unconfirm_ssl_ajax' ), 10 );
+		add_action( 'wpmu_new_blog', array( $this, 'determine_new_site_tls' ), 10, 3 );
+		add_filter( 'parent_file', array( $this, 'tls_admin_menu' ), 11, 1 );
+		add_action( 'load-site-new.php', array( $this, 'tls_sites_display' ), 1 );
+		add_action( 'wp_ajax_confirm_tls', array( $this, 'confirm_tls_ajax' ), 10 );
+		add_action( 'wp_ajax_unconfirm_tls', array( $this, 'unconfirm_tls_ajax' ), 10 );
 		add_action( 'wp_ajax_view_csr', array( $this, 'view_csr_ajax' ), 10 );
 	}
 
 	/**
-	 * Determine if a new site should be flagged for SSL configuration.
+	 * Determine if a new site should be flagged for TLS configuration.
 	 *
-	 * If this domain has already been added for another site, we'll assume the SSL status
+	 * If this domain has already been added for another site, we'll assume the TLS status
 	 * of that configuration and allow it to play out. If this is the first time for this
-	 * domain, then we should flag it as SSL disabled.
+	 * domain, then we should flag it as TLS disabled.
 	 *
 	 * @param $blog_id
 	 * @param $user_id
 	 * @param $domain
 	 */
-	public function determine_new_site_ssl( $blog_id, $user_id, $domain ) {
+	public function determine_new_site_tls( $blog_id, $user_id, $domain ) {
 		/* @type WPDB $wpdb */
 		global $wpdb;
 
@@ -89,38 +89,38 @@ class WSUWP_SSL {
 	}
 
 	/**
-	 * Filter the submenu global to add a 'Manage Site SSL' link for the primary network.
+	 * Filter the submenu global to add a 'Manage Site TLS' link for the primary network.
 	 *
 	 * @param string $parent_file Parent file of a menu subsection.
 	 *
 	 * @return string Parent file of a menu subsection.
 	 */
-	public function ssl_admin_menu( $parent_file ) {
+	public function tls_admin_menu( $parent_file ) {
 		global $self, $submenu, $submenu_file;
 
 		if ( wsuwp_get_current_network()->id == wsuwp_get_primary_network_id() ) {
 			$submenu['sites.php'][15] = array(
-				'Manage Site SSL',
+				'Manage Site TLS',
 				'manage_sites',
-				'site-new.php?display=ssl',
+				'site-new.php?display=tls',
 			);
 		}
 
-		if ( isset( $_GET['display'] ) && 'ssl' === $_GET['display'] ) {
-			$self = 'site-new.php?display=ssl';
+		if ( isset( $_GET['display'] ) && 'tls' === $_GET['display'] ) {
+			$self = 'site-new.php?display=tls';
 			$parent_file = 'sites.php';
-			$submenu_file = 'site-new.php?display=ssl';
+			$submenu_file = 'site-new.php?display=tls';
 		}
 
 		return $parent_file;
 	}
 
 	/**
-	 * Retrieve a list of domains that have not yet been confirmed as SSL ready.
+	 * Retrieve a list of domains that have not yet been confirmed as TLS ready.
 	 *
-	 * @return array List of domains waiting for SSL confirmation.
+	 * @return array List of domains waiting for TLS confirmation.
 	 */
-	public function get_ssl_disabled_domains() {
+	public function get_tls_disabled_domains() {
 		/* @type WPDB $wpdb */
 		global $wpdb;
 
@@ -145,18 +145,18 @@ class WSUWP_SSL {
 	}
 
 	/**
-	 * Provide a page to display domains that have not yet been confirmed as SSL ready.
+	 * Provide a page to display domains that have not yet been confirmed as TLS ready.
 	 */
-	public function ssl_sites_display() {
+	public function tls_sites_display() {
 		global $title;
 
-		if ( ! isset( $_GET['display'] ) || 'ssl' !== $_GET['display'] ) {
+		if ( ! isset( $_GET['display'] ) || 'tls' !== $_GET['display'] ) {
 			return;
 		}
 
-		$title = __('Manage Site SSL');
+		$title = __('Manage Site TLS');
 
-		wp_enqueue_script( 'wsu-ssl', plugins_url( '/js/wsu-ssl-site.min.js', __FILE__ ), array( 'jquery' ), wsuwp_global_version(), true );
+		wp_enqueue_script( 'wsu-tls', plugins_url( '/js/wsu-tls-site.min.js', __FILE__ ), array( 'jquery' ), wsuwp_global_version(), true );
 
 		require( ABSPATH . 'wp-admin/admin-header.php' );
 
@@ -185,7 +185,7 @@ class WSUWP_SSL {
 				font-family: Dashicons;
 				cursor: pointer;
 			}
-			.confirm_ssl, .view_csr {
+			.confirm_tls, .view_csr {
 				text-decoration: underline;
 				color: blue;
 				cursor: pointer;
@@ -197,18 +197,18 @@ class WSUWP_SSL {
 			}
 		</style>
 		<div class="wrap">
-			<h2 id="add-new-site"><?php _e('Manage Site SSL') ?></h2>
-			<p class="description">These sites have been configured on the WSUWP Platform, but do not yet have confirmed SSL configurations.</p>
-			<input id="ssl_ajax_nonce" type="hidden" value="<?php echo esc_attr( wp_create_nonce( 'confirm-ssl' ) ); ?>" />
+			<h2 id="add-new-site"><?php _e('Manage Site TLS') ?></h2>
+			<p class="description">These sites have been configured on the WSUWP Platform, but do not yet have confirmed TLS configurations.</p>
+			<input id="tls_ajax_nonce" type="hidden" value="<?php echo esc_attr( wp_create_nonce( 'confirm-tls' ) ); ?>" />
 			<table class="form-table">
 				<?php
-				foreach( $this->get_ssl_disabled_domains() as $domain ) {
+				foreach( $this->get_tls_disabled_domains() as $domain ) {
 					if ( file_exists( '/home/www-data/' . $domain . '.csr' ) ) {
 						$action_text = 'View CSR';
 						$action_class = 'view_csr';
 					} else {
 						$action_text = 'Unavailable';
-						$action_class = 'confirm_ssl';
+						$action_class = 'confirm_tls';
 					}
 					?><tr><td><span id="<?php echo md5( $domain ); ?>" data-domain="<?php echo esc_attr( $domain ); ?>" class="<?php echo $action_class; ?>"><?php echo $action_text; ?></span></td><td><?php echo esc_html( $domain ); ?></td></tr><?php
 				}
@@ -234,13 +234,13 @@ class WSUWP_SSL {
 	}
 
 	/**
-	 * Handle an AJAX request to mark a domain as confirmed for SSL.
+	 * Handle an AJAX request to mark a domain as confirmed for TLS.
 	 */
-	public function confirm_ssl_ajax() {
+	public function confirm_tls_ajax() {
 		/* @type WPDB $wpdb */
 		global $wpdb;
 
-		check_ajax_referer( 'confirm-ssl', 'ajax_nonce' );
+		check_ajax_referer( 'confirm-tls', 'ajax_nonce' );
 
 		if ( true === wsuwp_validate_domain( $_POST['domain'] ) ) {
 			$domain_option = $_POST['domain'] . '_ssl_disabled';
@@ -267,13 +267,13 @@ class WSUWP_SSL {
 	}
 
 	/**
-	 * Handle an AJAX request to mark a domain as unconfirmed for SSL.
+	 * Handle an AJAX request to mark a domain as unconfirmed for TLS.
 	 */
-	public function unconfirm_ssl_ajax() {
+	public function unconfirm_tls_ajax() {
 		/* @type WPDB $wpdb */
 		global $wpdb;
 
-		check_ajax_referer( 'confirm-ssl', 'ajax_nonce' );
+		check_ajax_referer( 'confirm-tls', 'ajax_nonce' );
 
 		if ( true === wsuwp_validate_domain( trim( $_POST['domain'] ) ) ) {
 			$option_name = trim( $_POST['domain'] ) . '_ssl_disabled';
@@ -304,7 +304,7 @@ class WSUWP_SSL {
 	 * Handle an AJAX request to retrieve and view the CSR for a domain.
 	 */
 	public function view_csr_ajax() {
-		check_ajax_referer( 'confirm-ssl', 'ajax_nonce' );
+		check_ajax_referer( 'confirm-tls', 'ajax_nonce' );
 
 		if ( true === $this->validate_domain( $_POST['domain'] ) && file_exists( '/home/www-data/' . $_POST['domain'] . '.csr' ) ) {
 			$csr_data = file_get_contents( '/home/www-data/' . $_POST['domain'] . '.csr' );
@@ -368,4 +368,4 @@ class WSUWP_SSL {
 		return false;
 	}
 }
-$wsuwp_ssl = new WSUWP_SSL();
+$wsuwp_tls = new WSUWP_TLS();

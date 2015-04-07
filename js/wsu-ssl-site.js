@@ -5,15 +5,15 @@
 
 	function handle_submit_click() {
 		domain = $('#add-domain' ).val();
-		unconfirm_ssl_domain( domain );
+		unconfirm_tls_domain( domain );
 	}
 
 	function handle_confirm_click() {
 		domain = $(this).attr('data-domain');
 		row = $(this).attr('id');
 
-		if ( true === confirm( "Removing " + domain + " from the SSL confirmation list." ) ) {
-			confirm_ssl_domain( domain );
+		if ( true === confirm( "Removing " + domain + " from the TLS confirmation list." ) ) {
+			confirm_tls_domain( domain );
 		}
 	}
 
@@ -23,7 +23,7 @@
 	function view_csr() {
 		domain = $(this).attr('data-domain');
 
-		var ajax_nonce = $('#ssl_ajax_nonce').val();
+		var ajax_nonce = $('#tls_ajax_nonce').val();
 
 		var data = {
 			'action' : 'view_csr',
@@ -58,10 +58,10 @@
 	 *
 	 * @param domain
 	 */
-	function unconfirm_ssl_domain( domain ) {
-		var ajax_nonce = $('#ssl_ajax_nonce' ).val();
+	function unconfirm_tls_domain( domain ) {
+		var ajax_nonce = $('#tls_ajax_nonce' ).val();
 		var data = {
-			'action' : 'unconfirm_ssl',
+			'action' : 'unconfirm_tls',
 			'domain' : domain,
 			'ajax_nonce' : ajax_nonce
 		};
@@ -86,10 +86,10 @@
 	 *
 	 * @param domain
 	 */
-	function confirm_ssl_domain( domain ) {
-		var ajax_nonce = $('#ssl_ajax_nonce' ).val();
+	function confirm_tls_domain( domain ) {
+		var ajax_nonce = $('#tls_ajax_nonce' ).val();
 		var data = {
-			'action' : 'confirm_ssl',
+			'action' : 'confirm_tls',
 			'domain' : domain,
 			'ajax_nonce' : ajax_nonce
 		};
@@ -109,6 +109,6 @@
 	}
 
 	$('#submit-add-domain' ).on('click',handle_submit_click );
-	$('.confirm_ssl' ).on('click', handle_confirm_click );
+	$('.confirm_tls' ).on('click', handle_confirm_click );
 	$('.view_csr' ).on('click', view_csr );
 }(jQuery, ajaxurl, window));
