@@ -9,7 +9,7 @@ module.exports = function(grunt) {
 			}
 		},
 		jshint: {
-			files: ['js/wsu-ssl-site.js'],
+			files: ['js/wsu-tls-site.js'],
 			options: {
 				boss: true,
 				curly: true,
