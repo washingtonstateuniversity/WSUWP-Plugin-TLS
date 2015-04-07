@@ -154,6 +154,46 @@ class WSUWP_TLS {
 			return;
 		}
 
+		// Manage the attempted upload of an x.509 certificate for a site.
+		if ( isset( $_FILES['cer_filename'] ) ) {
+
+			if ( false === wp_verify_nonce( $_POST['_certnonce'], 'wsuwp-tls-cert' ) ) {
+				wp_die( 'Invalid attempt to upload certificate.' );
+			}
+
+			$new_cert_file = $_FILES['cer_filename'];
+
+			// We take a guess that the file size is normal for a certificate.
+			if ( 'application/x-x509-ca-cert' === $new_cert_file['type'] && 2000 < $new_cert_file['size'] && 2300 > $new_cert_file['size'] ) {
+				$cert_contents = file_get_contents( $new_cert_file['tmp_name'] );
+				$cert_data = openssl_x509_parse( $cert_contents );
+
+				// Check that a valid domain is attached to the CN before creating the full certificate file.
+				if ( isset( $cert_data['subject'] ) && isset( $cert_data['subject']['CN'] ) && $this->validate_domain( $cert_data['subject']['CN'] ) ) {
+					$new_cert_domain = $cert_data['subject']['CN'];
+					$new_local_file = '/home/www-data/' . $new_cert_domain . '.cer';
+
+					// Append the intermediate certificates to the site certificate.
+					$sha2_intermediate = file_get_contents( dirname( __FILE__ ) . '/sha2-intermediate.crt' );
+					$cert_contents = $cert_contents . "\n" . $sha2_intermediate . "\n";
+
+					file_put_contents( $new_local_file, $cert_contents );
+					unlink( $new_cert_file['tmp_name'] );
+
+					// Set correct file permissions.
+					$stat = stat( dirname( $new_local_file ));
+					$perms = $stat['mode'] & 0000666;
+					@chmod( $new_local_file, $perms );
+
+					wp_safe_redirect( network_admin_url( 'site-new.php?display=tls' ) );
+				} else {
+					wp_die( 'The certificate appeared correct, but a valid CN was not found. Please verify the cert.' );
+				}
+			} else {
+				wp_die( 'This is not a valid x.509 certificate file.' );
+			}
+		}
+
 		$title = __('Manage Site TLS');
 
 		wp_enqueue_script( 'wsu-tls', plugins_url( '/js/wsu-tls-site.min.js', __FILE__ ), array( 'jquery' ), wsuwp_global_version(), true );
@@ -221,7 +261,8 @@ class WSUWP_TLS {
 			</table>
 			<h3><?php _e( 'Upload Certificate' ); ?></h3>
 			<p class="description">Upload the standard x.509 certificate from InCommon. Do not use a certificate that includes any intermediate or root certificate information.</p>
-			<form method="POST">
+			<form method="POST" action="" enctype="multipart/form-data">
+				<?php wp_nonce_field( 'wsuwp-tls-cert', '_certnonce' ); ?>
 				<input type="file" name="cer_filename">
 				<input type="submit" value="Upload">
 			</form>
