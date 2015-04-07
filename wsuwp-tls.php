@@ -145,6 +145,20 @@ class WSUWP_TLS {
 	}
 
 	/**
+	 * Clean a value originally passed as part of a certificate's subjectAltName.
+	 *
+	 * @param string $alt_name Should be formatted as `DNS:my.server.tld`
+	 *
+	 * @return string my.server.tld
+	 */
+	private function clean_alt_name( $alt_name ) {
+		$alt_name = trim( $alt_name );
+		$alt_name = str_replace( 'DNS:', '', $alt_name );
+
+		return $alt_name;
+	}
+
+	/**
 	 * Provide a page to display domains that have not yet been confirmed as TLS ready.
 	 */
 	public function tls_sites_display() {
@@ -171,6 +185,32 @@ class WSUWP_TLS {
 				// Check that a valid domain is attached to the CN before creating the full certificate file.
 				if ( isset( $cert_data['subject'] ) && isset( $cert_data['subject']['CN'] ) && $this->validate_domain( $cert_data['subject']['CN'] ) ) {
 					$new_cert_domain = $cert_data['subject']['CN'];
+
+					// Retrieve the subjectAltNames from the cert to check for a www domain.
+					$new_cert_alt_names = explode( ',', $cert_data['extensions']['subjectAltName'] );
+					$new_cert_alt_names = array_map( array( $this, 'clean_alt_name' ), $new_cert_alt_names );
+
+					// Grab a template with which to write the server's nginx configuration.
+					if ( 1 === count( $new_cert_alt_names ) ) {
+						$server_block_config = file_get_contents( dirname( __FILE__ ) . '/config/single-site-nginx-block.conf' );
+						$server_block_config = str_replace( '<% cert_domain %>', $new_cert_domain, $server_block_config );
+					} elseif ( 2 === count( $new_cert_alt_names ) ) {
+						$server_block_config = file_get_contents( dirname( __FILE__ ) . '/config/multi-site-nginx-block.conf' );
+						$server_block_config = str_replace( '<% cert_domain %>', $new_cert_domain, $server_block_config );
+					} else {
+						wp_die( 'The number of subjectAltName values in this certificate is invalid.' );
+						exit;
+					}
+
+					// Grab the existing generated configuration and append new servers to it before saving again.
+					$server_config_contents = '';
+					if ( file_exists( '/home/www-data/04_generated_config.conf' ) ) {
+						$server_config_contents = file_get_contents( '/home/www-data/04_generated_config.conf' ) . "\n";
+					}
+
+					$server_config_contents .= $server_block_config . "\n";
+					file_put_contents( '/home/www-data/04_generated_config.conf', $server_config_contents );
+
 					$new_local_file = '/home/www-data/' . $new_cert_domain . '.cer';
 
 					// Append the intermediate certificates to the site certificate.
