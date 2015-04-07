@@ -208,6 +208,10 @@ class WSUWP_TLS {
 						$server_config_contents = file_get_contents( '/home/www-data/04_generated_config.conf' ) . "\n";
 					}
 
+					if ( 0 !== substr_count( $server_config_contents, $new_cert_domain ) ) {
+						wp_die( 'The domain name attached to this cert is already part of the generated configuration.' );
+					}
+
 					$server_config_contents .= $server_block_config . "\n";
 					file_put_contents( '/home/www-data/04_generated_config.conf', $server_config_contents );
 
