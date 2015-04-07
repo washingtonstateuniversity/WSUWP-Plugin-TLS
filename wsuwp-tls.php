@@ -218,7 +218,7 @@ class WSUWP_TLS {
 					$new_local_file = '/home/www-data/' . $new_cert_domain . '.cer';
 
 					// Append the intermediate certificates to the site certificate.
-					$sha2_intermediate = file_get_contents( dirname( __FILE__ ) . '/sha2-intermediate.crt' );
+					$sha2_intermediate = file_get_contents( dirname( __FILE__ ) . '/config/sha2-intermediate.crt' );
 					$cert_contents = $cert_contents . "\n" . $sha2_intermediate . "\n";
 
 					file_put_contents( $new_local_file, $cert_contents );
