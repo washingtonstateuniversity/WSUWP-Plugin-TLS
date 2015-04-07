@@ -250,7 +250,7 @@ class WSUWP_TLS {
 			<h2 id="add-new-site"><?php _e('Manage Site TLS') ?></h2>
 			<p class="description">These sites have been configured on the WSUWP Platform, but do not yet have confirmed TLS configurations.</p>
 			<input id="tls_ajax_nonce" type="hidden" value="<?php echo esc_attr( wp_create_nonce( 'confirm-tls' ) ); ?>" />
-			<table class="form-table">
+			<table class="form-table" style="width: 600px;">
 				<?php
 				foreach( $this->get_tls_disabled_domains() as $domain ) {
 					if ( file_exists( '/home/www-data/' . $domain . '.csr' ) ) {
@@ -260,9 +260,22 @@ class WSUWP_TLS {
 						$action_text = 'Unavailable';
 						$action_class = 'confirm_tls';
 					}
-					?><tr><td><span id="<?php echo md5( $domain ); ?>" data-domain="<?php echo esc_attr( $domain ); ?>" class="<?php echo $action_class; ?>"><?php echo $action_text; ?></span></td><td><?php echo esc_html( $domain ); ?></td></tr><?php
+
+					if ( file_exists( '/home/www-data/' . $domain . '.cer' ) ) {
+						$cer_text = 'Cert Uploaded';
+					} else {
+						$cer_text = 'Cert Required';
+					}
+					?>
+					<tr>
+						<td><span id="<?php echo md5( $domain ); ?>" data-domain="<?php echo esc_attr( $domain ); ?>" class="<?php echo $action_class; ?>"><?php echo $action_text; ?></span></td>
+						<td><?php echo esc_html( $domain ); ?></td>
+						<td><?php echo $cer_text; ?></td>
+					</tr><?php
 				}
 				?>
+			</table>
+			<table class="form-table">
 				<tr><td><label for="add_domain">Generate a CSR:</label></td><td>
 						<input name="add_domain" id="add-domain" class="regular-text" value="" />
 						<input type="button" id="submit-add-domain" class="button button-primary" value="Get CSR" />
