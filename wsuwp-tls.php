@@ -232,7 +232,9 @@ class WSUWP_TLS {
 				<input type="file" name="cer_filename">
 				<input type="submit" value="Upload">
 			</form>
-			<div id="view-csr-container" style="display: none;"></div>
+			<div class="view-csr-container-wrapper">
+				<div id="view-csr-container" style="display: none;"></div>
+			</div>
 		</div>
 
 		<?php

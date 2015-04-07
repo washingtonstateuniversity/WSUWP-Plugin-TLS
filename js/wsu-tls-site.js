@@ -42,6 +42,7 @@
 		response = $.parseJSON( response );
 		if ( response.success ) {
 			$('#view-csr-container' ).html('<span id="csr-close">X</span><textarea>' + response.success + '</textarea>' ).show();
+			$('.view-csr-container-wrapper').show();
 			$('#csr-close' ).on('click', remove_csr_response );
 		}
 	}
@@ -50,7 +51,8 @@
 	 * Hide the container used to view the CSR.
 	 */
 	function remove_csr_response() {
-		$('#view-csr-container' ).html('' ).hide();
+		$('#view-csr-container' ).html('' );
+		$('.view-csr-container-wrapper').hide();
 	}
 
 	/**
