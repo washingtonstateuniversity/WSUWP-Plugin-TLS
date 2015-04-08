@@ -1,116 +1,132 @@
-/*globals confirm, ajaxurl */
-(function($,ajaxurl, window){
-	var domain;
-	var row;
+/* global Backbone, jQuery, _ */
+var wsuTLS = wsuTLS || {};
 
-	function handle_submit_click() {
-		domain = $('#add-domain' ).val();
-		unconfirm_tls_domain( domain );
-	}
+(function (window, Backbone, $, _, wsuTLS) {
+	'use strict';
 
-	function handle_confirm_click() {
-		domain = $(this).attr('data-domain');
-		row = $(this).attr('id');
+	wsuTLS.appView = Backbone.View.extend({
 
-		if ( true === confirm( "Removing " + domain + " from the TLS confirmation list." ) ) {
-			confirm_tls_domain( domain );
+		el: '.wsu-manage-tls',
+
+		domain: '',
+
+		row: '',
+
+		// Setup the events used in the overall application view.
+		events: {
+			'click #submit-add-domain': 'handle_submit_click',
+			'click .confirm_tls': 'handle_confirm_click',
+			'click .view_csr': 'view_csr',
+			'click #csr-close': 'remove_csr_response'
+		},
+
+		handle_submit_click: function() {
+			this.domain = $('#add-domain').val();
+			this.unconfirm_tls_domain( this.domain );
+		},
+
+		handle_confirm_click: function(evt) {
+			this.domain = $(evt.target).attr('data-domain');
+			this.row = $(evt.target).attr('id');
+
+			if ( true === window.confirm( "Removing " + this.domain + " from the TLS confirmation list." ) ) {
+				this.confirm_tls_domain( this.domain );
+			}
+		},
+
+		/**
+		 * Fire an ajax call to WordPress to find the generated CSR for display.
+		 */
+		view_csr: function(evt) {
+			this.domain = $(evt.target).attr('data-domain');
+
+			var ajax_nonce = $('#tls_ajax_nonce').val();
+
+			var data = {
+				'action' : 'view_csr',
+				'domain' : this.domain,
+				'ajax_nonce' : ajax_nonce
+			};
+			$.post(window.ajaxurl,data,this.view_csr_response);
+		},
+
+		/**
+		 * Handle the response to the ajax request for viewing a CSR.
+		 *
+		 * @param response
+		 */
+		view_csr_response: function( response ) {
+			response = $.parseJSON( response );
+			if ( response.success ) {
+				$('#view-csr-container' ).html('<span id="csr-close" class="dashicons dashicons-no-alt">X</span><textarea>' + response.success + '</textarea>' ).show();
+				$('.view-csr-container-wrapper').show();
+			}
+		},
+
+		/**
+		 * Hide the container used to view the CSR.
+		 */
+		remove_csr_response: function() {
+			$('#view-csr-container' ).html('' );
+			$('.view-csr-container-wrapper').hide();
+		},
+
+		/**
+		 * Generate a CSR for a new domain, outside of the new site creation process.
+		 *
+		 * @param domain
+		 */
+		unconfirm_tls_domain: function( domain ) {
+			var ajax_nonce = $('#tls_ajax_nonce' ).val();
+			var data = {
+				'action' : 'unconfirm_tls',
+				'domain' : domain,
+				'ajax_nonce' : ajax_nonce
+			};
+			$.post(window.ajaxurl,data,this.handle_unconfirm_response);
+		},
+
+		/**
+		 * Handle the response from the ajax call used to request a new CSR.
+		 *
+		 * @param response
+		 */
+		handle_unconfirm_response: function( response ) {
+			response = $.parseJSON( response );
+			if ( response.success ) {
+				$('#add-domain' ).val('');
+				window.location.reload();
+			}
+		},
+
+		/**
+		 * Close out an SSL request for a domain via ajax callback.
+		 *
+		 * @param domain
+		 */
+		confirm_tls_domain: function ( domain ) {
+			var ajax_nonce = $('#tls_ajax_nonce' ).val();
+			var data = {
+				'action' : 'confirm_tls',
+				'domain' : domain,
+				'ajax_nonce' : ajax_nonce
+			};
+			$.post(window.ajaxurl,data,this.handle_confirm_response);
+		},
+
+		/**
+		 * Handle the response from the ajax call used to close an SSL request.
+		 *
+		 * @param response
+		 */
+		handle_confirm_response: function( response ) {
+			response = $.parseJSON( response );
+			if ( response.success ) {
+				$('#' + this.row ).parentsUntil('tbody' ).remove();
+			}
 		}
-	}
 
-	/**
-	 * Fire an ajax call to WordPress to find the generated CSR for display.
-	 */
-	function view_csr() {
-		domain = $(this).attr('data-domain');
+	});
 
-		var ajax_nonce = $('#tls_ajax_nonce').val();
-
-		var data = {
-			'action' : 'view_csr',
-			'domain' : domain,
-			'ajax_nonce' : ajax_nonce
-		};
-		$.post(ajaxurl,data,view_csr_response);
-	}
-
-	/**
-	 * Handle the response to the ajax request for viewing a CSR.
-	 *
-	 * @param response
-	 */
-	function view_csr_response( response ) {
-		response = $.parseJSON( response );
-		if ( response.success ) {
-			$('#view-csr-container' ).html('<span id="csr-close" class="dashicons dashicons-no-alt">X</span><textarea>' + response.success + '</textarea>' ).show();
-			$('.view-csr-container-wrapper').show();
-			$('#csr-close' ).on('click', remove_csr_response );
-		}
-	}
-
-	/**
-	 * Hide the container used to view the CSR.
-	 */
-	function remove_csr_response() {
-		$('#view-csr-container' ).html('' );
-		$('.view-csr-container-wrapper').hide();
-	}
-
-	/**
-	 * Generate a CSR for a new domain, outside of the new site creation process.
-	 *
-	 * @param domain
-	 */
-	function unconfirm_tls_domain( domain ) {
-		var ajax_nonce = $('#tls_ajax_nonce' ).val();
-		var data = {
-			'action' : 'unconfirm_tls',
-			'domain' : domain,
-			'ajax_nonce' : ajax_nonce
-		};
-		$.post(ajaxurl,data,handle_unconfirm_response);
-	}
-
-	/**
-	 * Handle the response from the ajax call used to request a new CSR.
-	 *
-	 * @param response
-	 */
-	function handle_unconfirm_response( response ) {
-		response = $.parseJSON( response );
-		if ( response.success ) {
-			$('#add-domain' ).val('');
-			window.location.reload();
-		}
-	}
-
-	/**
-	 * Close out an SSL request for a domain via ajax callback.
-	 *
-	 * @param domain
-	 */
-	function confirm_tls_domain( domain ) {
-		var ajax_nonce = $('#tls_ajax_nonce' ).val();
-		var data = {
-			'action' : 'confirm_tls',
-			'domain' : domain,
-			'ajax_nonce' : ajax_nonce
-		};
-		$.post(ajaxurl,data,handle_confirm_response);
-	}
-
-	/**
-	 * Handle the response from the ajax call used to close an SSL request.
-	 *
-	 * @param response
-	 */
-	function handle_confirm_response( response ) {
-		response = $.parseJSON( response );
-		if ( response.success ) {
-			$('#' + row ).parentsUntil('tbody' ).remove();
-		}
-	}
-
-	$('#submit-add-domain' ).on('click',handle_submit_click );
-	$('.confirm_tls' ).on('click', handle_confirm_click );
-	$('.view_csr' ).on('click', view_csr );
-}(jQuery, ajaxurl, window));
+	wsuTLS.app = new wsuTLS.appView();
+})(window, Backbone, jQuery, _, wsuTLS);

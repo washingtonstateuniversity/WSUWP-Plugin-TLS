@@ -254,12 +254,12 @@ class WSUWP_TLS {
 		$title = __('Manage Site TLS');
 
 		wp_enqueue_style( 'wsu-tls-style', plugins_url( '/css/style.css', __FILE__ ) );
-		wp_enqueue_script( 'wsu-tls', plugins_url( '/js/wsu-tls-site.min.js', __FILE__ ), array( 'jquery' ), wsuwp_global_version(), true );
+		wp_enqueue_script( 'wsu-tls', plugins_url( '/js/wsu-tls-site.min.js', __FILE__ ), array( 'backbone' ), wsuwp_global_version(), true );
 
 		require( ABSPATH . 'wp-admin/admin-header.php' );
 
 		?>
-		<div class="wrap">
+		<div class="wrap wsu-manage-tls">
 			<h2 id="add-new-site"><?php _e('Manage Site TLS') ?></h2>
 			<p class="description">These sites have been configured on the WSUWP Platform, but do not yet have confirmed TLS configurations.</p>
 			<input id="tls_ajax_nonce" type="hidden" value="<?php echo esc_attr( wp_create_nonce( 'confirm-tls' ) ); ?>" />
