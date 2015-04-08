@@ -253,24 +253,37 @@ class WSUWP_TLS {
 			<table class="form-table" style="width: 600px;">
 				<?php
 				foreach( $this->get_tls_disabled_domains() as $domain ) {
-					if ( file_exists( '/home/www-data/' . $domain . '.csr' ) ) {
+					// The default action status is to allow a CSR to be generated.
+					$action_text = 'Generate CSR';
+					$action_class = 'generate_csr';
+
+					// If a CSR has been generated, we'll want to view it to request a certificate.
+					if ( file_exists( '/home/www-data/to-deploy/' . $domain . '.csr' ) ) {
 						$action_text = 'View CSR';
 						$action_class = 'view_csr';
-					} else {
-						$action_text = 'Unavailable';
-						$action_class = 'confirm_tls';
 					}
 
-					if ( file_exists( '/home/www-data/' . $domain . '.cer' ) ) {
-						$cer_text = 'Cert Uploaded';
-					} else {
-						$cer_text = 'Cert Required';
+					// If a certificate has been uploaded, it will await deployment.
+					if ( file_exists( '/home/www-data/to-deploy/' . $domain . '.cer' ) ) {
+						$action_text = 'Awaiting Deployment';
+						$action_class = '';
 					}
+
+					// If a certificate has been deployed, it should be TLS ready shortly.
+					if ( file_exists( '/home/www-data/deployed/' . $domain . '.cer' ) ) {
+						$action_text = 'Check Status';
+						$action_class = 'check_tls';
+					}
+
 					?>
-					<tr>
-						<td><span id="<?php echo md5( $domain ); ?>" data-domain="<?php echo esc_attr( $domain ); ?>" class="<?php echo $action_class; ?>"><?php echo $action_text; ?></span></td>
+					<tr id="<?php echo md5( $domain ); ?>">
 						<td><?php echo esc_html( $domain ); ?></td>
-						<td><?php echo $cer_text; ?></td>
+						<td class="tls-table-action">
+							<span data-domain="<?php echo esc_attr( $domain ); ?>" class="<?php echo $action_class; ?>"><?php echo $action_text; ?></span>
+						</td>
+						<td class="tls-table-remove">
+							<span data-domain="<?php echo esc_attr( $domain ); ?>" class="confirm_tls">Remove</span>
+						</td>
 					</tr><?php
 				}
 				?>
