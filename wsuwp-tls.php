@@ -214,10 +214,8 @@ class WSUWP_TLS {
 						file_put_contents( '/home/www-data/04_generated_config.conf', $server_config_contents );
 					}
 
-					$server_config_contents .= $server_block_config . "\n";
-					file_put_contents( '/home/www-data/04_generated_config.conf', $server_config_contents );
-
-					$new_local_file = '/home/www-data/' . $new_cert_domain . '.cer';
+					// The new certificate should go in a directory to await deployment.
+					$new_local_file = '/home/www-data/to-deploy/' . $new_cert_domain . '.cer';
 
 					// Append the intermediate certificates to the site certificate.
 					$sha2_intermediate = file_get_contents( dirname( __FILE__ ) . '/config/sha2-intermediate.crt' );
@@ -225,6 +223,9 @@ class WSUWP_TLS {
 
 					file_put_contents( $new_local_file, $cert_contents );
 					unlink( $new_cert_file['tmp_name'] );
+
+					// Move the new key file to await deployment.
+					rename( '/home/www-data/' . $new_cert_domain . '.key', '/home/www-data/to-deploy/' . $new_cert_domain . '.key' );
 
 					// Set correct file permissions.
 					$stat = stat( dirname( $new_local_file ));
