@@ -61,6 +61,7 @@ class WSUWP_TLS {
 		add_action( 'wp_ajax_confirm_tls', array( $this, 'confirm_tls_ajax' ), 10 );
 		add_action( 'wp_ajax_unconfirm_tls', array( $this, 'unconfirm_tls_ajax' ), 10 );
 		add_action( 'wp_ajax_view_csr', array( $this, 'view_csr_ajax' ), 10 );
+		add_action( 'wp_ajax_check_tls', array( $this, 'check_tls_ajax' ), 10 );
 	}
 
 	/**
@@ -325,12 +326,22 @@ class WSUWP_TLS {
 				<input type="submit" value="Upload">
 			</form>
 
-			<div class="view-csr-container-wrapper">
-				<div class="view-csr-container">
-					<div class="view-csr-container-header">
+			<div class="view-csr-container-wrapper tls-container-wrapper">
+				<div class="view-csr-container tls-container">
+					<div class="tls-container-header">
 						<span class="view-csr-close dashicons dashicons-no-alt">X</span>
 					</div>
 					<div class="view-csr-container-body">
+
+					</div>
+				</div>
+			</div>
+			<div class="tls-status-container-wrapper tls-container-wrapper">
+				<div class="tls-status-container tls-container">
+					<div class="tls-container-header">
+						<span class="tls-status-close dashicons dashicons-no-alt">X</span>
+					</div>
+					<div class="tls-status-container-body">
 
 					</div>
 				</div>
@@ -420,6 +431,33 @@ class WSUWP_TLS {
 			$response = json_encode( array( 'success' => $csr_data ) );
 		} else {
 			$response = json_encode( array( 'error' => 'No CSR is available for this domain.' ) );
+		}
+
+		echo $response;
+		die();
+	}
+
+	/**
+	 * Check a domain passed via ajax for a valid HTTPS connection. This is
+	 * very rudimentary, but should serve its purpose.
+	 */
+	public function check_tls_ajax() {
+		check_ajax_referer( 'confirm-tls', 'ajax_nonce' );
+
+		if ( true === $this->validate_domain( $_POST['domain'] ) ) {
+			$tls_response = wp_remote_get( 'https://' . $_POST['domain'] );
+			if ( is_wp_error( $tls_response ) ) {
+				$response = json_encode( array( 'success' => '<p>https://' . $_POST['domain'] . ' did not respond to a connection attempt. You may want to check manually.</p>' ) );
+			} else {
+				$tls_response = wp_remote_retrieve_headers( $tls_response );
+				if ( empty( $tls_response ) ) {
+					$response = json_encode( array( 'success' => '<p>https://' . $_POST['domain'] . ' responded, but no headers were returned. Check the HTTPS connection manually.</p>' ) );
+				} else {
+					$response = json_encode( array( 'success' => '<p>https://' . $_POST['domain'] . ' responded to an HTTPS connection and can be removed from the list.</p>' ) );
+				}
+			}
+		} else {
+			$response = json_encode( array( 'success' => '<p>Invalid domain passed, unable to check HTTPS connecton.</p>' ) );
 		}
 
 		echo $response;

@@ -16,8 +16,10 @@ var wsuTLS = wsuTLS || {};
 		events: {
 			'click #submit-add-domain': 'handle_submit_click',
 			'click .confirm_tls': 'handle_confirm_click',
+			'click .check_tls': 'handle_tls_check',
 			'click .view_csr': 'view_csr',
-			'click .view-csr-close': 'remove_csr_response'
+			'click .view-csr-close': 'remove_csr_response',
+			'click .tls-status-close': 'remove_tls_response'
 		},
 
 		handle_submit_click: function() {
@@ -31,6 +33,27 @@ var wsuTLS = wsuTLS || {};
 
 			if ( true === window.confirm( "Removing " + this.domain + " from the TLS confirmation list." ) ) {
 				this.confirm_tls_domain( this.domain );
+			}
+		},
+
+		handle_tls_check: function(evt) {
+			this.domain = $(evt.target).attr('data-domain');
+
+			var ajax_nonce = $('#tls_ajax_nonce').val();
+
+			var data = {
+				'action' : 'check_tls',
+				'domain' : this.domain,
+				'ajax_nonce' : ajax_nonce
+			};
+			$.post(window.ajaxurl,data,this.check_tls_response);
+		},
+
+		check_tls_response: function( response ) {
+			response = $.parseJSON(response);
+			if ( response.success ) {
+				$('.tls-status-container-body').html( response.success );
+				$('.tls-status-container-wrapper').show();
 			}
 		},
 
@@ -69,6 +92,14 @@ var wsuTLS = wsuTLS || {};
 		remove_csr_response: function() {
 			$('.view-csr-container-body').html('');
 			$('.view-csr-container-wrapper').hide();
+		},
+
+		/**
+		 * Hide a container used to view the TLS status of a domain.
+		 */
+		remove_tls_response: function() {
+			$('.tls-status-container-body').html('');
+			$('.tls-status-container-wrapper').hide();
 		},
 
 		/**
