@@ -269,7 +269,7 @@ class WSUWP_TLS {
 				foreach( $this->get_tls_disabled_domains() as $domain ) {
 					// The default action status is to allow a CSR to be generated.
 					$action_text = 'Generate CSR';
-					$action_class = 'generate_csr';
+					$action_class = 'no_action';
 
 					// If a CSR has been generated, we'll want to view it to request a certificate.
 					if ( file_exists( '/home/www-data/' . $domain . '.csr' ) ) {
@@ -280,7 +280,7 @@ class WSUWP_TLS {
 					// If a certificate has been uploaded, it will await deployment.
 					if ( file_exists( '/home/www-data/to-deploy/' . $domain . '.cer' ) ) {
 						$action_text = 'Awaiting Deployment';
-						$action_class = '';
+						$action_class = 'no_action';
 					}
 
 					// If a certificate has been deployed, it should be TLS ready shortly.

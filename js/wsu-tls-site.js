@@ -41,7 +41,7 @@
 	function view_csr_response( response ) {
 		response = $.parseJSON( response );
 		if ( response.success ) {
-			$('#view-csr-container' ).html('<span id="csr-close">X</span><textarea>' + response.success + '</textarea>' ).show();
+			$('#view-csr-container' ).html('<span id="csr-close" class="dashicons dashicons-no-alt">X</span><textarea>' + response.success + '</textarea>' ).show();
 			$('.view-csr-container-wrapper').show();
 			$('#csr-close' ).on('click', remove_csr_response );
 		}

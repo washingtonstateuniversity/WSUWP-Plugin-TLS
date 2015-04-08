@@ -30,19 +30,28 @@
 
 #csr-close {
 	position: absolute;
-	top: 4px;
-	right: 7px;
-	font-size: 1rem;
-	line-height: 1.4rem;
+	top: 15px;
+	right: 10px;
+	font-size: 0;
+	line-height: 0;
 	color: #333;
-	font-family: Dashicons;
 	cursor: pointer;
 }
 
-.confirm_tls, .view_csr {
+#csr-close:before {
+	font-size: 2rem;
+}
+
+.confirm_tls,
+.view_csr,
+.check_tls {
 	text-decoration: underline;
 	color: blue;
 	cursor: pointer;
+}
+
+.no_action {
+	color: #8699a4;
 }
 
 .form-table td {
