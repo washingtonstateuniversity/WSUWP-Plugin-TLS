@@ -326,7 +326,14 @@ class WSUWP_TLS {
 			</form>
 
 			<div class="view-csr-container-wrapper">
-				<div id="view-csr-container"></div>
+				<div class="view-csr-container">
+					<div class="view-csr-container-header">
+						<span class="view-csr-close dashicons dashicons-no-alt">X</span>
+					</div>
+					<div class="view-csr-container-body">
+
+					</div>
+				</div>
 			</div>
 		</div>
 

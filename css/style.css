@@ -9,7 +9,7 @@
 	background: rgba(0, 0, 0, 0.7);
 }
 
-#view-csr-container {
+.view-csr-container {
 	position: fixed !important;
 	margin-left: -25%;
 	top: 185px !important;
@@ -22,24 +22,35 @@
 	-webkit-transform: translate3d(0,0,0);
 }
 
-#view-csr-container textarea {
+.view-csr-container-header {
+	position: relative;
+	width: 100%;
+	height: 28px;
+}
+
+.view-csr-container-body textarea {
+	border-top: 0;
 	min-height: 415px;
 	min-width: 625px;
 	padding: 15px;
 }
 
-#csr-close {
+.view-csr-close {
 	position: absolute;
 	top: 15px;
 	right: 10px;
 	font-size: 0;
 	line-height: 0;
-	color: #333;
+	color: #888;
 	cursor: pointer;
 }
 
-#csr-close:before {
+.view-csr-close:before {
 	font-size: 2rem;
+}
+
+.view-csr-close:hover {
+	color: #555;
 }
 
 .confirm_tls,

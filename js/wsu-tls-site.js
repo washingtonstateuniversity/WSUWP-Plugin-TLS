@@ -17,7 +17,7 @@ var wsuTLS = wsuTLS || {};
 			'click #submit-add-domain': 'handle_submit_click',
 			'click .confirm_tls': 'handle_confirm_click',
 			'click .view_csr': 'view_csr',
-			'click #csr-close': 'remove_csr_response'
+			'click .view-csr-close': 'remove_csr_response'
 		},
 
 		handle_submit_click: function() {
@@ -58,7 +58,7 @@ var wsuTLS = wsuTLS || {};
 		view_csr_response: function( response ) {
 			response = $.parseJSON( response );
 			if ( response.success ) {
-				$('#view-csr-container' ).html('<span id="csr-close" class="dashicons dashicons-no-alt">X</span><textarea>' + response.success + '</textarea>' ).show();
+				$('.view-csr-container-body').html('<textarea>' + response.success + '</textarea>');
 				$('.view-csr-container-wrapper').show();
 			}
 		},
@@ -67,7 +67,7 @@ var wsuTLS = wsuTLS || {};
 		 * Hide the container used to view the CSR.
 		 */
 		remove_csr_response: function() {
-			$('#view-csr-container' ).html('' );
+			$('.view-csr-container-body').html('');
 			$('.view-csr-container-wrapper').hide();
 		},
 
