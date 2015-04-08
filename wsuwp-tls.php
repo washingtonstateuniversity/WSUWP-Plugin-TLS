@@ -202,6 +202,16 @@ class WSUWP_TLS {
 						exit;
 					}
 
+					// This may be overkill, but it's a way for us to make sure all pieces are in
+					// order for deployment. Both a CSR and private key must be present.
+					if ( ! file_exists( '/home/www-data/' . $new_cert_domain . '.csr' ) ) {
+						wp_die( 'There is no existing CSR for this domain.' );
+					}
+
+					if ( ! file_exists( '/home/www-data/' . $new_cert_domain . '.key' ) ) {
+						wp_die( 'There is no existing private key for this domain.' );
+					}
+
 					// Grab the existing generated configuration and append new servers to it before saving again.
 					$server_config_contents = '';
 					if ( file_exists( '/home/www-data/04_generated_config.conf' ) ) {
