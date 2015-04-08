@@ -252,6 +252,7 @@ class WSUWP_TLS {
 			<input id="tls_ajax_nonce" type="hidden" value="<?php echo esc_attr( wp_create_nonce( 'confirm-tls' ) ); ?>" />
 			<table class="form-table" style="width: 600px;">
 				<?php
+
 				foreach( $this->get_tls_disabled_domains() as $domain ) {
 					// The default action status is to allow a CSR to be generated.
 					$action_text = 'Generate CSR';
@@ -284,26 +285,35 @@ class WSUWP_TLS {
 						<td class="tls-table-remove">
 							<span data-domain="<?php echo esc_attr( $domain ); ?>" class="confirm_tls">Remove</span>
 						</td>
-					</tr><?php
+					</tr>
+					<?php
 				}
+
 				?>
 			</table>
+
 			<table class="form-table">
-				<tr><td><label for="add_domain">Generate a CSR:</label></td><td>
+				<tr>
+					<td><label for="add_domain">Generate a CSR:</label></td>
+					<td>
 						<input name="add_domain" id="add-domain" class="regular-text" value="" />
 						<input type="button" id="submit-add-domain" class="button button-primary" value="Get CSR" />
 						<p class="description">Enter a domain name here to generate a <a href="http://en.wikipedia.org/wiki/Certificate_signing_request">CSR</a> to be used for obtaining a new <a href="http://en.wikipedia.org/wiki/Public_key_certificate">public key certificate</a> through InCommon's <a href="https://cert-manager.com/customer/InCommon/ssl?action=enroll">cert manager</a>.</p>
-					</td></tr>
+					</td>
+				</tr>
 			</table>
-			<h3><?php _e( 'Upload Certificate' ); ?></h3>
+
+			<h3>Upload Certificate</h3>
 			<p class="description">Upload the standard x.509 certificate from InCommon. Do not use a certificate that includes any intermediate or root certificate information.</p>
+
 			<form method="POST" action="" enctype="multipart/form-data">
 				<?php wp_nonce_field( 'wsuwp-tls-cert', '_certnonce' ); ?>
 				<input type="file" name="cer_filename">
 				<input type="submit" value="Upload">
 			</form>
+
 			<div class="view-csr-container-wrapper">
-				<div id="view-csr-container" style="display: none;"></div>
+				<div id="view-csr-container"></div>
 			</div>
 		</div>
 
