@@ -29,7 +29,7 @@ var wsuTLS = wsuTLS || {};
 
 		handle_confirm_click: function(evt) {
 			this.domain = $(evt.target).attr('data-domain');
-			this.row = $(evt.target).attr('id');
+			this.row = $(evt.target).parents('tr').attr('id');
 
 			if ( true === window.confirm( "Removing " + this.domain + " from the TLS confirmation list." ) ) {
 				this.confirm_tls_domain( this.domain );
@@ -142,6 +142,7 @@ var wsuTLS = wsuTLS || {};
 				'domain' : domain,
 				'ajax_nonce' : ajax_nonce
 			};
+
 			$.post(window.ajaxurl,data,this.handle_confirm_response);
 		},
 
@@ -153,7 +154,7 @@ var wsuTLS = wsuTLS || {};
 		handle_confirm_response: function( response ) {
 			response = $.parseJSON( response );
 			if ( response.success ) {
-				$('#' + this.row ).parentsUntil('tbody' ).remove();
+				$('#' + wsuTLS.app.row ).remove();
 			}
 		}
 
