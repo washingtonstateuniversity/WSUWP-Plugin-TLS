@@ -259,7 +259,7 @@ class WSUWP_TLS {
 					$action_class = 'generate_csr';
 
 					// If a CSR has been generated, we'll want to view it to request a certificate.
-					if ( file_exists( '/home/www-data/to-deploy/' . $domain . '.csr' ) ) {
+					if ( file_exists( '/home/www-data/' . $domain . '.csr' ) ) {
 						$action_text = 'View CSR';
 						$action_class = 'view_csr';
 					}
