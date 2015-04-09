@@ -228,7 +228,15 @@ class WSUWP_TLS {
 	}
 
 	/**
-	 * Provide a page to display domains that have not yet been confirmed as TLS ready.
+	 * Provide a page to display domains that have not yet been confirmed as TLS ready. On
+	 * this page:
+	 *
+	 *  - A CSR can be generated for the domain so that a certificate can be requested
+	 *    through a 3rd party.
+	 *  - A matching private key for that CSR is generated and not exposed through the UI.
+	 *  - The certificate obtained through a 3rd party can be uploaded to complete the request.
+	 *  - Status of a deployed TLS configuration can be checked.
+	 *  - The domain can be removed as an "unconfirmed" TLS domain.
 	 */
 	public function tls_sites_display() {
 		global $title;
