@@ -37,6 +37,47 @@ class WSUWP_TLS {
 	);
 
 	/**
+	 * Directory where staging files for certificate and config deployment
+	 * are located. The generated nginx config file lives here.
+	 *
+	 * @var string
+	 */
+	private $staging_dir = '/home/www-data/';
+
+	/**
+	 * Directory where CSR and private key files are stored while awaiting
+	 * the upload of a certificate file.
+	 *
+	 * @var string
+	 */
+	private $pending_cert_dir = '/home/www-data/pending-cert/';
+
+	/**
+	 * Directory where private key and certificate files are stored while
+	 * awaiting deployment via server script.
+	 *
+	 * @var string
+	 */
+	private $to_deploy_dir = '/home/www-data/to-deploy/';
+
+	/**
+	 * Directory where private key and certificate files are stored after
+	 * deployment while awaiting confirmation in the admin.
+	 *
+	 * @var string
+	 */
+	private $deployed_dir = '/home/www-data/deployed/';
+
+	/**
+	 * Directory where private key and certificate files are stored after
+	 * confirmation of a TLS domain. These can be cleaned up by a server
+	 * admin or script at any time.
+	 *
+	 * @var string
+	 */
+	private $complete_dir = '/home/www-data/complete/';
+
+	/**
 	 * Contains the resource containing the private key before export to disk.
 	 *
 	 * @var bool|object
@@ -210,19 +251,19 @@ class WSUWP_TLS {
 
 					// This may be overkill, but it's a way for us to make sure all pieces are in
 					// order for deployment. Both a CSR and private key must be present.
-					if ( ! file_exists( '/home/www-data/pending-cert/' . $new_cert_domain . '.csr' ) ) {
+					if ( ! file_exists( $this->pending_cert_dir . $new_cert_domain . '.csr' ) ) {
 						wp_die( 'There is no existing CSR for this domain.' );
 					}
 
-					if ( ! file_exists( '/home/www-data/pending-cert/' . $new_cert_domain . '.key' ) ) {
+					if ( ! file_exists( $this->pending_cert_dir . $new_cert_domain . '.key' ) ) {
 						wp_die( 'There is no existing private key for this domain.' );
 					}
 
 					// Grab the existing generated configuration and append new servers to it before saving again.
 					$server_config_contents = '';
 					$matches = array();
-					if ( file_exists( '/home/www-data/04_generated_config.conf' ) ) {
-						$server_config_contents = file_get_contents( '/home/www-data/04_generated_config.conf' ) . "\n";
+					if ( file_exists( $this->staging_dir . '04_generated_config.conf' ) ) {
+						$server_config_contents = file_get_contents( $this->staging_dir . '/04_generated_config.conf' ) . "\n";
 						$regex = '/# BEGIN generated server block for news.wsu.edu(.*)END generated server block for news.wsu.edu/s';
 						preg_match( $regex, $server_config_contents, $matches );
 					}
@@ -233,10 +274,10 @@ class WSUWP_TLS {
 					}
 
 					$server_config_contents .= $server_block_config . "\n";
-					file_put_contents( '/home/www-data/04_generated_config.conf', $server_config_contents );
+					file_put_contents( $this->staging_dir . '04_generated_config.conf', $server_config_contents );
 
 					// The new certificate should go in a directory to await deployment.
-					$new_local_file = '/home/www-data/to-deploy/' . $new_cert_domain . '.cer';
+					$new_local_file = $this->to_deploy_dir . $new_cert_domain . '.cer';
 
 					// Append the intermediate certificates to the site certificate.
 					$sha2_intermediate = file_get_contents( dirname( __FILE__ ) . '/config/sha2-intermediate.crt' );
@@ -246,7 +287,7 @@ class WSUWP_TLS {
 					unlink( $new_cert_file['tmp_name'] );
 
 					// Move the new key file to await deployment.
-					rename( '/home/www-data/pending-cert/' . $new_cert_domain . '.key', '/home/www-data/to-deploy/' . $new_cert_domain . '.key' );
+					rename( $this->pending_cert_dir . $new_cert_domain . '.key', $this->to_deploy_dir . $new_cert_domain . '.key' );
 
 					// Set correct file permissions.
 					$stat = stat( dirname( $new_local_file ));
@@ -283,19 +324,19 @@ class WSUWP_TLS {
 					$action_class = 'no_action';
 
 					// If a CSR has been generated, we'll want to view it to request a certificate.
-					if ( file_exists( '/home/www-data/pending-cert/' . $domain . '.csr' ) ) {
+					if ( file_exists( $this->pending_cert_dir . $domain . '.csr' ) ) {
 						$action_text = 'View CSR';
 						$action_class = 'view_csr';
 					}
 
 					// If a certificate has been uploaded, it will await deployment.
-					if ( file_exists( '/home/www-data/to-deploy/' . $domain . '.cer' ) ) {
+					if ( file_exists( $this->to_deploy_dir . $domain . '.cer' ) ) {
 						$action_text = 'Awaiting Deployment';
 						$action_class = 'no_action';
 					}
 
 					// If a certificate has been deployed, it should be TLS ready shortly.
-					if ( file_exists( '/home/www-data/deployed/' . $domain . '.cer' ) ) {
+					if ( file_exists( $this->deployed_dir . $domain . '.cer' ) ) {
 						$action_text = 'Check Status';
 						$action_class = 'check_tls';
 					}
@@ -385,15 +426,15 @@ class WSUWP_TLS {
 				}
 
 				// If the files still exist in the pending deploy location, delete them.
-				if ( file_exists( '/home/www-data/to-deploy/' . $_POST['domain'] . '.key' ) ) {
-					@unlink( '/home/www-data/to-deploy/' . $_POST['domain'] . '.key' );
-					@unlink( '/home/www-data/to-deploy/' . $_POST['domain'] . '.cer' );
+				if ( file_exists( $this->to_deploy_dir . $_POST['domain'] . '.key' ) ) {
+					@unlink( $this->to_deploy_dir . $_POST['domain'] . '.key' );
+					@unlink( $this->to_deploy_dir . $_POST['domain'] . '.cer' );
 				}
 
 				// Move the private key and certificate to a completed directory.
-				if ( file_exists( '/home/www-data/deployed/' . $_POST['domain'] . '.key' ) ) {
-					@rename( '/home/www-data/deployed/' . $_POST['domain'] . '.key', '/home/www-data/complete/' . $_POST['domain'] . '.key' );
-					@rename( '/home/www-data/deployed/' . $_POST['domain'] . '.cer', '/home/www-data/complete/' . $_POST['domain'] . '.cer' );
+				if ( file_exists( $this->deployed_dir . $_POST['domain'] . '.key' ) ) {
+					@rename( $this->deployed_dir . $_POST['domain'] . '.key', $this->complete_dir . $_POST['domain'] . '.key' );
+					@rename( $this->deployed_dir . $_POST['domain'] . '.cer', $this->complete_dir . $_POST['domain'] . '.cer' );
 				}
 
 				$response = json_encode( array( 'success' => $_POST['domain'] ) );
@@ -448,8 +489,8 @@ class WSUWP_TLS {
 	public function view_csr_ajax() {
 		check_ajax_referer( 'confirm-tls', 'ajax_nonce' );
 
-		if ( true === $this->validate_domain( $_POST['domain'] ) && file_exists( '/home/www-data/pending-cert/' . $_POST['domain'] . '.csr' ) ) {
-			$csr_data = file_get_contents( '/home/www-data/pending-cert/' . $_POST['domain'] . '.csr' );
+		if ( true === $this->validate_domain( $_POST['domain'] ) && file_exists( $this->pending_cert_dir . $_POST['domain'] . '.csr' ) ) {
+			$csr_data = file_get_contents( $this->pending_cert_dir . $_POST['domain'] . '.csr' );
 			$response = json_encode( array( 'success' => $csr_data ) );
 		} else {
 			$response = json_encode( array( 'error' => 'No CSR is available for this domain.' ) );
@@ -514,8 +555,8 @@ class WSUWP_TLS {
 		$this->csr = openssl_csr_new( $this->dn, $this->private_key, $this->config );
 
 		// Export the key and CSR to disk for later use.
-		openssl_csr_export_to_file( $this->csr, '/home/www-data/pending-cert/' . $server_name . '.csr' );
-		openssl_pkey_export_to_file( $this->private_key, '/home/www-data/pending-cert/' . $server_name . '.key' );
+		openssl_csr_export_to_file( $this->csr, $this->pending_cert_dir . $server_name . '.csr' );
+		openssl_pkey_export_to_file( $this->private_key, $this->pending_cert_dir . $server_name . '.key' );
 
 		return true;
 	}
