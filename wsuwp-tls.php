@@ -210,11 +210,11 @@ class WSUWP_TLS {
 
 					// This may be overkill, but it's a way for us to make sure all pieces are in
 					// order for deployment. Both a CSR and private key must be present.
-					if ( ! file_exists( '/home/www-data/' . $new_cert_domain . '.csr' ) ) {
+					if ( ! file_exists( '/home/www-data/pending-cert/' . $new_cert_domain . '.csr' ) ) {
 						wp_die( 'There is no existing CSR for this domain.' );
 					}
 
-					if ( ! file_exists( '/home/www-data/' . $new_cert_domain . '.key' ) ) {
+					if ( ! file_exists( '/home/www-data/pending-cert/' . $new_cert_domain . '.key' ) ) {
 						wp_die( 'There is no existing private key for this domain.' );
 					}
 
@@ -246,7 +246,7 @@ class WSUWP_TLS {
 					unlink( $new_cert_file['tmp_name'] );
 
 					// Move the new key file to await deployment.
-					rename( '/home/www-data/' . $new_cert_domain . '.key', '/home/www-data/to-deploy/' . $new_cert_domain . '.key' );
+					rename( '/home/www-data/pending-cert/' . $new_cert_domain . '.key', '/home/www-data/to-deploy/' . $new_cert_domain . '.key' );
 
 					// Set correct file permissions.
 					$stat = stat( dirname( $new_local_file ));
@@ -283,7 +283,7 @@ class WSUWP_TLS {
 					$action_class = 'no_action';
 
 					// If a CSR has been generated, we'll want to view it to request a certificate.
-					if ( file_exists( '/home/www-data/' . $domain . '.csr' ) ) {
+					if ( file_exists( '/home/www-data/pending-cert/' . $domain . '.csr' ) ) {
 						$action_text = 'View CSR';
 						$action_class = 'view_csr';
 					}
@@ -448,8 +448,8 @@ class WSUWP_TLS {
 	public function view_csr_ajax() {
 		check_ajax_referer( 'confirm-tls', 'ajax_nonce' );
 
-		if ( true === $this->validate_domain( $_POST['domain'] ) && file_exists( '/home/www-data/' . $_POST['domain'] . '.csr' ) ) {
-			$csr_data = file_get_contents( '/home/www-data/' . $_POST['domain'] . '.csr' );
+		if ( true === $this->validate_domain( $_POST['domain'] ) && file_exists( '/home/www-data/pending-cert/' . $_POST['domain'] . '.csr' ) ) {
+			$csr_data = file_get_contents( '/home/www-data/pending-cert/' . $_POST['domain'] . '.csr' );
 			$response = json_encode( array( 'success' => $csr_data ) );
 		} else {
 			$response = json_encode( array( 'error' => 'No CSR is available for this domain.' ) );
@@ -514,8 +514,8 @@ class WSUWP_TLS {
 		$this->csr = openssl_csr_new( $this->dn, $this->private_key, $this->config );
 
 		// Export the key and CSR to disk for later use.
-		openssl_csr_export_to_file( $this->csr, '/home/www-data/' . $server_name . '.csr' );
-		openssl_pkey_export_to_file( $this->private_key, '/home/www-data/' . $server_name . '.key' );
+		openssl_csr_export_to_file( $this->csr, '/home/www-data/pending-cert/' . $server_name . '.csr' );
+		openssl_pkey_export_to_file( $this->private_key, '/home/www-data/pending-cert/' . $server_name . '.key' );
 
 		return true;
 	}
