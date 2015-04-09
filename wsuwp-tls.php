@@ -96,6 +96,7 @@ class WSUWP_TLS {
 	 * Setup the class.
 	 */
 	public function __construct() {
+		add_action( 'admin_init', array( $this, 'setup_directories' ), 10 );
 		add_action( 'wpmu_new_blog', array( $this, 'determine_new_site_tls' ), 10, 3 );
 		add_filter( 'parent_file', array( $this, 'tls_admin_menu' ), 11, 1 );
 		add_action( 'load-site-new.php', array( $this, 'tls_sites_display' ), 1 );
@@ -103,6 +104,20 @@ class WSUWP_TLS {
 		add_action( 'wp_ajax_unconfirm_tls', array( $this, 'unconfirm_tls_ajax' ), 10 );
 		add_action( 'wp_ajax_view_csr', array( $this, 'view_csr_ajax' ), 10 );
 		add_action( 'wp_ajax_check_tls', array( $this, 'check_tls_ajax' ), 10 );
+	}
+
+	/**
+	 * Provide filters for each of the directories used during the management of nginx config,
+	 * CSR, private key, and certificate files.
+	 *
+	 * See documentation for how to actually manage these files outside of the plugin.
+	 */
+	public function setup_directories() {
+		$this->staging_dir = apply_filters( 'wsuwp_tls_staging_dir', $this->staging_dir );
+		$this->pending_cert_dir = apply_filters( 'wsuwp_tls_pending_cert_dir', $this->pending_cert_dir );
+		$this->to_deploy_dir = apply_filters( 'wsuwp_tls_to_deploy_dir', $this->to_deploy_dir );
+		$this->deployed_dir = apply_filters( 'wsuwp_tls_deployed_dir', $this->deployed_dir );
+		$this->complete_dir = apply_filters( 'wsuwp_tls_complete_dir', $this->complete_dir );
 	}
 
 	/**
