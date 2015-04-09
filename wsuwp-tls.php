@@ -215,15 +215,20 @@ class WSUWP_TLS {
 
 					// Grab the existing generated configuration and append new servers to it before saving again.
 					$server_config_contents = '';
+					$matches = array();
 					if ( file_exists( '/home/www-data/04_generated_config.conf' ) ) {
 						$server_config_contents = file_get_contents( '/home/www-data/04_generated_config.conf' ) . "\n";
+						$regex = '/# BEGIN generated server block for news.wsu.edu(.*)END generated server block for news.wsu.edu/s';
+						preg_match( $regex, $server_config_contents, $matches );
 					}
 
-					// Only append the server configuration if it doesn't exist already.
-					if ( 0 === substr_count( $server_config_contents, $new_cert_domain ) ) {
-						$server_config_contents .= $server_block_config . "\n";
-						file_put_contents( '/home/www-data/04_generated_config.conf', $server_config_contents );
+					// Strip a previous single or multi domain configuration for this domain before appending.
+					if ( ! empty( array( $matches ) ) ) {
+						$server_config_contents = str_replace( $matches[0], '', $server_config_contents );
 					}
+
+					$server_config_contents .= $server_block_config . "\n";
+					file_put_contents( '/home/www-data/04_generated_config.conf', $server_config_contents );
 
 					// The new certificate should go in a directory to await deployment.
 					$new_local_file = '/home/www-data/to-deploy/' . $new_cert_domain . '.cer';
