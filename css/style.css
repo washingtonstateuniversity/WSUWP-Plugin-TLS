@@ -1,0 +1,94 @@
+.tls-container-wrapper {
+	display: none;
+	z-index: 99999;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.tls-container {
+	position: fixed !important;
+	margin-left: -25%;
+	top: 185px !important;
+	left: 50% !important;
+	min-height: 150px !important;
+	line-height: 0;
+	background-color: #fff;
+	-webkit-box-shadow: 0 3px 6px rgba(0,0,0,.3);
+	box-shadow: 0 3px 6px rgba(0,0,0,.3);
+	-webkit-transform: translate3d(0,0,0);
+}
+
+.tls-status-container {
+	min-height: 0 !important;
+	max-width: 600px;
+}
+
+.tls-container-header {
+	position: relative;
+	width: 100%;
+	height: 28px;
+	border-bottom: 1px solid #eee;
+}
+
+.tls-status-container-body {
+	padding: 15px;
+}
+
+.view-csr-container-body textarea {
+	border-top: 0;
+	min-height: 415px;
+	min-width: 625px;
+	padding: 15px;
+}
+
+.tls-status-close,
+.view-csr-close {
+	position: absolute;
+	top: 15px;
+	right: 10px;
+	font-size: 0;
+	line-height: 0;
+	color: #888;
+	cursor: pointer;
+}
+
+.tls-status-close:before,
+.view-csr-close:before {
+	font-size: 2rem;
+}
+
+.tls-status-close:hover,
+.view-csr-close:hover {
+	color: #555;
+}
+
+.confirm_tls,
+.view_csr,
+.check_tls {
+	text-decoration: underline;
+	color: blue;
+	cursor: pointer;
+}
+
+.no_action {
+	color: #8699a4;
+}
+
+.form-table td {
+	padding: 8px 10px;
+	line-height: 1.1;
+	vertical-align: middle;
+}
+
+.upload-cert,
+.generate-csr {
+	margin-top: 40px;
+}
+
+.upload-cert {
+	margin-bottom: 30px;
+}

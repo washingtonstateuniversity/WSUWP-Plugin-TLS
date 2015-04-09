@@ -3,16 +3,13 @@ module.exports = function(grunt) {
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
 		uglify: {
-			options: {
-				banner: '/*! <%= pkg.name %> <%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
-			},
 			build: {
-				src: 'js/wsu-ssl-site.js',
-				dest: 'js/wsu-ssl-site.min.js'
+				src: 'js/wsu-tls-site.js',
+				dest: 'js/wsu-tls-site.min.js'
 			}
 		},
 		jshint: {
-			files: ['js/wsu-ssl-site.js'],
+			files: ['js/wsu-tls-site.js'],
 			options: {
 				boss: true,
 				curly: true,
