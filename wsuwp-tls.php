@@ -78,6 +78,15 @@ class WSUWP_TLS {
 	private $complete_dir = '/home/www-data/complete/';
 
 	/**
+	 * The file in which nginx server blocks will be stored for each domain that
+	 * goes through the certificate process. By default, the configuration included
+	 * with this plugin will be used.
+	 *
+	 * @var string
+	 */
+	private $nginx_config_file = '04_generated_config.conf';
+
+	/**
 	 * Contains the resource containing the private key before export to disk.
 	 *
 	 * @var bool|object
@@ -108,7 +117,8 @@ class WSUWP_TLS {
 
 	/**
 	 * Provide filters for each of the directories used during the management of nginx config,
-	 * CSR, private key, and certificate files.
+	 * CSR, private key, and certificate files as well as for the name of the nginx config
+	 * file itself.
 	 *
 	 * See documentation for how to actually manage these files outside of the plugin.
 	 */
@@ -118,6 +128,8 @@ class WSUWP_TLS {
 		$this->to_deploy_dir = apply_filters( 'wsuwp_tls_to_deploy_dir', $this->to_deploy_dir );
 		$this->deployed_dir = apply_filters( 'wsuwp_tls_deployed_dir', $this->deployed_dir );
 		$this->complete_dir = apply_filters( 'wsuwp_tls_complete_dir', $this->complete_dir );
+
+		$this->nginx_config_file = apply_filters( 'wsuwp_nginx_config_file', $this->nginx_config_file );
 	}
 
 	/**
@@ -277,8 +289,8 @@ class WSUWP_TLS {
 					// Grab the existing generated configuration and append new servers to it before saving again.
 					$server_config_contents = '';
 					$matches = array();
-					if ( file_exists( $this->staging_dir . '04_generated_config.conf' ) ) {
-						$server_config_contents = file_get_contents( $this->staging_dir . '/04_generated_config.conf' ) . "\n";
+					if ( file_exists( $this->staging_dir . $this->nginx_config_file ) ) {
+						$server_config_contents = file_get_contents( $this->staging_dir . $this->nginx_config_file ) . "\n";
 						$regex = '/# BEGIN generated server block for news.wsu.edu(.*)END generated server block for news.wsu.edu/s';
 						preg_match( $regex, $server_config_contents, $matches );
 					}
@@ -289,7 +301,7 @@ class WSUWP_TLS {
 					}
 
 					$server_config_contents .= $server_block_config . "\n";
-					file_put_contents( $this->staging_dir . '04_generated_config.conf', $server_config_contents );
+					file_put_contents( $this->staging_dir . $this->nginx_config_file, $server_config_contents );
 
 					// The new certificate should go in a directory to await deployment.
 					$new_local_file = $this->to_deploy_dir . $new_cert_domain . '.cer';
