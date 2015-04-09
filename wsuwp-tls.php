@@ -291,7 +291,7 @@ class WSUWP_TLS {
 					$matches = array();
 					if ( file_exists( $this->staging_dir . $this->nginx_config_file ) ) {
 						$server_config_contents = file_get_contents( $this->staging_dir . $this->nginx_config_file ) . "\n";
-						$regex = '/# BEGIN generated server block for news.wsu.edu(.*)END generated server block for news.wsu.edu/s';
+						$regex = '/# BEGIN generated server block for ' . $new_cert_domain . '(.*)END generated server block for ' . $new_cert_domain . '/s';
 						preg_match( $regex, $server_config_contents, $matches );
 					}
 
