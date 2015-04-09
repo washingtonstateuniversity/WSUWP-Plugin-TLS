@@ -392,25 +392,23 @@ class WSUWP_TLS {
 				?>
 			</table>
 
-			<table class="form-table">
-				<tr>
-					<td><label for="add_domain">Generate a CSR:</label></td>
-					<td>
-						<input name="add_domain" id="add-domain" class="regular-text" value="" />
-						<input type="button" id="submit-add-domain" class="button button-primary" value="Get CSR" />
-						<p class="description">Enter a domain name here to generate a <a href="http://en.wikipedia.org/wiki/Certificate_signing_request">CSR</a> to be used for obtaining a new <a href="http://en.wikipedia.org/wiki/Public_key_certificate">public key certificate</a> through InCommon's <a href="https://cert-manager.com/customer/InCommon/ssl?action=enroll">cert manager</a>.</p>
-					</td>
-				</tr>
-			</table>
+			<div class="generate-csr">
+				<h3><label for="add-domain">Generate a CSR:</label></h3>
+				<input name="add_domain" id="add-domain" class="regular-text" value="" />
+				<input type="button" id="submit-add-domain" class="button button-primary" value="Get CSR" />
+				<p class="description">Enter a domain name here to generate a <a href="http://en.wikipedia.org/wiki/Certificate_signing_request">CSR</a> to be used for obtaining a new <a href="http://en.wikipedia.org/wiki/Public_key_certificate">public key certificate</a> through InCommon's <a href="https://cert-manager.com/customer/InCommon/ssl?action=enroll">cert manager</a>.</p>
+			</div>
 
-			<h3>Upload Certificate</h3>
-			<p class="description">Upload the standard x.509 certificate from InCommon. Do not use a certificate that includes any intermediate or root certificate information.</p>
+			<div class="upload-cert">
+				<h3>Upload Certificate</h3>
+				<p class="description">Upload the standard x.509 certificate from InCommon. Do not use a certificate that includes any intermediate or root certificate information.</p>
 
-			<form method="POST" action="" enctype="multipart/form-data">
-				<?php wp_nonce_field( 'wsuwp-tls-cert', '_certnonce' ); ?>
-				<input type="file" name="cer_filename">
-				<input type="submit" value="Upload">
-			</form>
+				<form method="POST" action="" enctype="multipart/form-data">
+					<?php wp_nonce_field( 'wsuwp-tls-cert', '_certnonce' ); ?>
+					<input type="file" name="cer_filename">
+					<input type="submit" value="Upload">
+				</form>
+			</div>
 
 			<div class="view-csr-container-wrapper tls-container-wrapper">
 				<div class="view-csr-container tls-container">
