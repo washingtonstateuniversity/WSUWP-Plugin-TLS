@@ -191,13 +191,18 @@ class WSUWP_TLS {
 					$new_cert_alt_names = explode( ',', $cert_data['extensions']['subjectAltName'] );
 					$new_cert_alt_names = array_map( array( $this, 'clean_alt_name' ), $new_cert_alt_names );
 
+					$config_user = wp_get_current_user();
 					// Grab a template with which to write the server's nginx configuration.
 					if ( 1 === count( $new_cert_alt_names ) ) {
 						$server_block_config = file_get_contents( dirname( __FILE__ ) . '/config/single-site-nginx-block.conf' );
 						$server_block_config = str_replace( '<% cert_domain %>', $new_cert_domain, $server_block_config );
+						$server_block_config = str_replace( '<% config_generated %>', date('Y-m-d H:i:s' ), $server_block_config );
+						$server_block_config = str_replace( '<% config_creator %>', $config_user->user_login, $server_block_config );
 					} elseif ( 2 === count( $new_cert_alt_names ) ) {
 						$server_block_config = file_get_contents( dirname( __FILE__ ) . '/config/multi-site-nginx-block.conf' );
 						$server_block_config = str_replace( '<% cert_domain %>', $new_cert_domain, $server_block_config );
+						$server_block_config = str_replace( '<% config_generated %>', date('Y-m-d H:i:s' ), $server_block_config );
+						$server_block_config = str_replace( '<% config_creator %>', $config_user->user_login, $server_block_config );
 					} else {
 						wp_die( 'The number of subjectAltName values in this certificate is invalid.' );
 						exit;
