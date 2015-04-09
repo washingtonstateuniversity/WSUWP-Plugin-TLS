@@ -384,9 +384,17 @@ class WSUWP_TLS {
 					wp_cache_delete( $cached_site->domain . $cached_site->path, 'wsuwp:site' );
 				}
 
+				// If the files still exist in the pending deploy location, delete them.
+				if ( file_exists( '/home/www-data/to-deploy/' . $_POST['domain'] . '.key' ) ) {
+					@unlink( '/home/www-data/to-deploy/' . $_POST['domain'] . '.key' );
+					@unlink( '/home/www-data/to-deploy/' . $_POST['domain'] . '.cer' );
+				}
+
 				// Move the private key and certificate to a completed directory.
-				rename( '/home/www-data/deployed/' . $_POST['domain'] . '.key', '/home/www-data/complete/' . $_POST['domain'] . '.key' );
-				rename( '/home/www-data/deployed/' . $_POST['domain'] . '.cer', '/home/www-data/complete/' . $_POST['domain'] . '.cer' );
+				if ( file_exists( '/home/www-data/deployed/' . $_POST['domain'] . '.key' ) ) {
+					@rename( '/home/www-data/deployed/' . $_POST['domain'] . '.key', '/home/www-data/complete/' . $_POST['domain'] . '.key' );
+					@rename( '/home/www-data/deployed/' . $_POST['domain'] . '.cer', '/home/www-data/complete/' . $_POST['domain'] . '.cer' );
+				}
 
 				$response = json_encode( array( 'success' => $_POST['domain'] ) );
 			} else {
