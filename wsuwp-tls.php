@@ -374,6 +374,10 @@ class WSUWP_TLS {
 					wp_cache_delete( $cached_site->domain . $cached_site->path, 'wsuwp:site' );
 				}
 
+				// Move the private key and certificate to a completed directory.
+				rename( '/home/www-data/deployed/' . $_POST['domain'] . '.key', '/home/www-data/complete/' . $_POST['domain'] . '.key' );
+				rename( '/home/www-data/deployed/' . $_POST['domain'] . '.cer', '/home/www-data/complete/' . $_POST['domain'] . '.cer' );
+
 				$response = json_encode( array( 'success' => $_POST['domain'] ) );
 			} else {
 				$response = json_encode( array( 'error' => 'The domain passed was valid, but confirmation was not successful.' ) );
