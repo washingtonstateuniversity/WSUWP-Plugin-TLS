@@ -274,12 +274,21 @@ class WSUWP_TLS {
 						$server_block_config = str_replace( '<% cert_domain %>', $new_cert_domain, $server_block_config );
 						$server_block_config = str_replace( '<% config_generated %>', date('Y-m-d H:i:s' ), $server_block_config );
 						$server_block_config = str_replace( '<% config_creator %>', $config_user->user_login, $server_block_config );
-					} elseif ( 2 === count( $new_cert_alt_names ) ) {
+					} elseif ( 2 <= count( $new_cert_alt_names ) ) {
 						$server_block_config = file_get_contents( dirname( __FILE__ ) . '/config/multi-site-nginx-block.conf' );
+						// Remove the primary CN domain from the list of alternate names.
+						foreach( $new_cert_alt_names as $k => $v ) {
+							if ( $v === $new_cert_domain ) {
+								unset( $new_cert_alt_names[ $k ] );
+							}
+						}
+						$new_cert_alt_names = implode( ' ', $new_cert_alt_names );
+						$server_block_config = str_replace( '<% alt_domains %>', $new_cert_alt_names, $server_block_config );
 						$server_block_config = str_replace( '<% cert_domain %>', $new_cert_domain, $server_block_config );
 						$server_block_config = str_replace( '<% config_generated %>', date('Y-m-d H:i:s' ), $server_block_config );
 						$server_block_config = str_replace( '<% config_creator %>', $config_user->user_login, $server_block_config );
 					} else {
+						// Should only throw this error when 0 domains are passed for subjectAltName.
 						wp_die( 'The number of subjectAltName values in this certificate is invalid.' );
 						exit;
 					}
