@@ -139,12 +139,13 @@ class WSUWP_TLS {
 	 * of that configuration and allow it to play out. If this is the first time for this
 	 * domain, then we should flag it as TLS disabled.
 	 *
+	 * @global wpdb $wpdb
+	 *
 	 * @param $blog_id
 	 * @param $user_id
 	 * @param $domain
 	 */
 	public function determine_new_site_tls( $blog_id, $user_id, $domain ) {
-		/* @type WPDB $wpdb */
 		global $wpdb;
 
 		$domain_exists = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->blogs WHERE domain = %s AND blog_id != %d LIMIT 1", $domain, $blog_id ) );
@@ -159,6 +160,10 @@ class WSUWP_TLS {
 
 	/**
 	 * Filter the submenu global to add a 'Manage Site TLS' link for the primary network.
+	 *
+	 * @global string $self
+	 * @global array  $submenu
+	 * @global string $submenu_file
 	 *
 	 * @param string $parent_file Parent file of a menu subsection.
 	 *
@@ -187,10 +192,11 @@ class WSUWP_TLS {
 	/**
 	 * Retrieve a list of domains that have not yet been confirmed as TLS ready.
 	 *
+	 * @global wpdb $wpdb
+	 *
 	 * @return array List of domains waiting for TLS confirmation.
 	 */
 	public function get_tls_disabled_domains() {
-		/* @type WPDB $wpdb */
 		global $wpdb;
 
 		$domains = $wpdb->get_results( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE '%_ssl_disabled'" );
@@ -237,6 +243,8 @@ class WSUWP_TLS {
 	 *  - The certificate obtained through a 3rd party can be uploaded to complete the request.
 	 *  - Status of a deployed TLS configuration can be checked.
 	 *  - The domain can be removed as an "unconfirmed" TLS domain.
+	 *
+	 * @global string $title
 	 */
 	public function tls_sites_display() {
 		global $title;
@@ -448,9 +456,10 @@ class WSUWP_TLS {
 
 	/**
 	 * Handle an AJAX request to mark a domain as confirmed for TLS.
+	 *
+	 * @global wpdb $wpdb
 	 */
 	public function confirm_tls_ajax() {
-		/* @type WPDB $wpdb */
 		global $wpdb;
 
 		check_ajax_referer( 'confirm-tls', 'ajax_nonce' );
@@ -493,9 +502,10 @@ class WSUWP_TLS {
 
 	/**
 	 * Handle an AJAX request to mark a domain as unconfirmed for TLS.
+	 *
+	 * @global wpdb $wpdb
 	 */
 	public function unconfirm_tls_ajax() {
-		/* @type WPDB $wpdb */
 		global $wpdb;
 
 		check_ajax_referer( 'confirm-tls', 'ajax_nonce' );
