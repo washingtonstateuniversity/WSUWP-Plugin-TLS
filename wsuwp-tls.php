@@ -172,7 +172,7 @@ class WSUWP_TLS {
 	public function tls_admin_menu( $parent_file ) {
 		global $self, $submenu, $submenu_file;
 
-		if ( wsuwp_get_current_network()->id == wsuwp_get_primary_network_id() ) {
+		if ( wsuwp_get_current_network()->id == get_main_network_id() ) {
 			$submenu['sites.php'][15] = array(
 				'Manage Site TLS',
 				'manage_sites',
