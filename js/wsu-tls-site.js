@@ -127,6 +127,9 @@ var wsuTLS = wsuTLS || {};
 			if ( response.success ) {
 				$('#add-domain' ).val('');
 				window.location.reload();
+			} else if ( response.error ) {
+				$( "#tls-error-message" ).html( "<strong>Error:</strong> " + response.error );
+				$( "#tls-error-message" ).css( "display", "block" );
 			}
 		},
 
