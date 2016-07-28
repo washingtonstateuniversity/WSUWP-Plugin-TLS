@@ -413,6 +413,7 @@ class WSUWP_TLS {
 				<h3><label for="add-domain">Generate a CSR:</label></h3>
 				<input name="add_domain" id="add-domain" class="regular-text" value="" />
 				<input type="button" id="submit-add-domain" class="button button-primary" value="Get CSR" />
+				<span id="tls-error-message"></span>
 				<p class="description">Enter a domain name here to generate a <a href="http://en.wikipedia.org/wiki/Certificate_signing_request">CSR</a> to be used for obtaining a new <a href="http://en.wikipedia.org/wiki/Public_key_certificate">public key certificate</a> through InCommon's <a href="https://cert-manager.com/customer/InCommon/ssl?action=enroll">cert manager</a>.</p>
 			</div>
 
@@ -511,22 +512,26 @@ class WSUWP_TLS {
 		check_ajax_referer( 'confirm-tls', 'ajax_nonce' );
 
 		if ( true === wsuwp_validate_domain( trim( $_POST['domain'] ) ) ) {
-			$option_name = trim( $_POST['domain'] ) . '_ssl_disabled';
-			switch_to_blog( 1 );
-			update_option( $option_name, '1' );
-			restore_current_blog();
-
 			$domain_sites = $wpdb->get_results( $wpdb->prepare( "SELECT domain, path FROM $wpdb->blogs WHERE domain = %s", $_POST['domain'] ) );
 
 			// If we're unconfirming, it's because we want to create a new certificate.
-			$this->generate_csr( $_POST['domain'] );
+			$csr_result = $this->generate_csr( $_POST['domain'] );
 
-			// Clear site cache on each unconfirmed domain.
-			foreach( $domain_sites as $cached_site ) {
-				wp_cache_delete( $cached_site->domain . $cached_site->path, 'wsuwp:site' );
+			if ( true !== $csr_result ) {
+				$response = json_encode( array( 'error' => $csr_result ) );
+			} else {
+				$option_name = trim( $_POST['domain'] ) . '_ssl_disabled';
+				switch_to_blog( 1 );
+				update_option( $option_name, '1' );
+				restore_current_blog();
+
+				// Clear site cache on each unconfirmed domain.
+				foreach( $domain_sites as $cached_site ) {
+					wp_cache_delete( $cached_site->domain . $cached_site->path, 'wsuwp:site' );
+				}
+
+				$response = json_encode( array( 'success' => trim( $_POST['domain'] ) ) );
 			}
-
-			$response = json_encode( array( 'success' => trim( $_POST['domain'] ) ) );
 		} else {
 			$response = json_encode( array( 'error' => 'Invalid domain.' ) );
 		}
@@ -607,10 +612,19 @@ class WSUWP_TLS {
 		$this->csr = openssl_csr_new( $this->dn, $this->private_key, $this->config );
 
 		// Export the key and CSR to disk for later use.
-		openssl_csr_export_to_file( $this->csr, $this->pending_cert_dir . $server_name . '.csr' );
-		openssl_pkey_export_to_file( $this->private_key, $this->pending_cert_dir . $server_name . '.key' );
+		$csr_export_result = openssl_csr_export_to_file( $this->csr, $this->pending_cert_dir . $server_name . '.csr' );
 
-		return true;
+		if ( $csr_export_result ) {
+			$key_export_result = openssl_pkey_export_to_file( $this->private_key, $this->pending_cert_dir . $server_name . '.key' );
+		} else {
+			return 'Unable to export a CSR file';
+		}
+
+		if ( $key_export_result ) {
+			return true;
+		}
+
+		return 'Unable to export a private key file';
 	}
 
 	/**

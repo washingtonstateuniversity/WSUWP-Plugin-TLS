@@ -92,3 +92,15 @@
 .upload-cert {
 	margin-bottom: 30px;
 }
+
+#tls-error-message {
+	display: none;
+	background: #fff;
+	color: #111;
+	width: 50%;
+	height: 30px;
+	line-height: 30px;
+	font-size: 1.1rem;
+	margin: .5rem 0;
+	padding: .5rem;
+}
