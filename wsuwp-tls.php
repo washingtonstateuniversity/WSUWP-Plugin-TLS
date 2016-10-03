@@ -263,7 +263,7 @@ class WSUWP_TLS {
 			$new_cert_file = $_FILES['cer_filename'];
 
 			// We take a guess that the file size is normal for a certificate.
-			if ( 'application/x-x509-ca-cert' === $new_cert_file['type'] && 2000 < $new_cert_file['size'] && 2300 > $new_cert_file['size'] ) {
+			if ( in_array( $new_cert_file['type'], array( 'application/pkix-cert', 'application/x-x509-ca-cert' ), true ) && 2000 < $new_cert_file['size'] && 2300 > $new_cert_file['size'] ) {
 				$cert_contents = file_get_contents( $new_cert_file['tmp_name'] );
 				$cert_data = openssl_x509_parse( $cert_contents );
 
