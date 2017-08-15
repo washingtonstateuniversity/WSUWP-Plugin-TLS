@@ -1,0 +1,73 @@
+sudo: false
+language: php
+
+# Cache some data across builds for performance.
+cache:
+  apt: true
+  directories:
+    - node_modules
+    - vendor
+    - $HOME/.composer/cache
+
+notifications:
+  email:
+    on_success: never
+    on_failure: change
+  slack:
+    on_pull_requests: true
+    on_success: change
+    on_failure: always
+    on_start: never
+    on_cancel: always
+    rooms:
+      - wsu-ucomm:n2TLZRJd84rMOMbkKthSEMgS
+
+branches:
+  only:
+    - master
+
+matrix:
+  include:
+    - php: 7.1
+      env: WP_VERSION=nightly
+    - php: 7.0
+      env: WP_VERSION=latest
+    - php: 7.0
+      env: WP_TRAVISCI=grunt
+
+before_script:
+  - export PATH="$HOME/.composer/vendor/bin:$PATH"
+  - phpenv config-rm xdebug.ini
+  - |
+    if [[ ! -z "$WP_VERSION" ]] ; then
+      bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
+      if [[ ${TRAVIS_PHP_VERSION:0:2} == "5." ]]; then
+        composer global require "phpunit/phpunit=4.8.*"
+      else
+        composer global require "phpunit/phpunit=5.7.*"
+      fi
+    fi
+  - |
+    if [[ "$WP_TRAVISCI" == "grunt" ]] ; then
+      nvm install stable
+      npm install -g grunt-cli
+      npm install
+      npm --version
+      node --version
+    fi
+  - mysql --version
+  - phpenv versions
+  - php --version
+
+script:
+  - |
+    if [[ ! -z "$WP_VERSION" ]] ; then
+      phpunit --version
+      phpunit
+      WP_MULTISITE=1 phpunit
+    fi
+  - |
+    if [[ "$WP_TRAVISCI" == "grunt" ]] ; then
+      grunt --version
+      grunt default
+    fi
