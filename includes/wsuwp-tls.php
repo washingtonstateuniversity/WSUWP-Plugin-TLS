@@ -4,6 +4,7 @@ namespace WSU\TLS;
 
 add_filter( 'parent_file', 'WSU\TLS\admin_menu', 11, 1 );
 add_action( 'load-site-new.php', 'WSU\TLS\manage_tls_sites_display', 1 );
+add_action( 'wpmu_new_blog', 'WSU\TLS\determine_new_site_tls', 10, 3 );
 
 /**
  * Filter the submenu global to add a 'Manage Site TLS' link for the primary network.
@@ -163,4 +164,31 @@ function manage_tls_sites_display() {
 	<?php
 	require( ABSPATH . 'wp-admin/admin-footer.php' );
 	die();
+}
+
+/**
+ * Determine if a new site should be flagged for TLS configuration.
+ *
+ * If this domain has already been added for another site, we'll assume the TLS status
+ * of that configuration and allow it to play out. If this is the first time for this
+ * domain, then we should flag it as TLS disabled.
+ *
+ * @since 0.1.0
+ *
+ * @global \wpdb $wpdb
+ *
+ * @param $blog_id
+ * @param $user_id
+ * @param $domain
+ */
+function determine_new_site_tls( $blog_id, $user_id, $domain ) {
+	global $wpdb;
+
+	$domain_exists = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->blogs WHERE domain = %s AND blog_id != %d LIMIT 1", $domain, $blog_id ) );
+
+	if ( ! $domain_exists ) {
+		switch_to_blog( 1 );
+		update_option( $domain . '_ssl_disabled', 1 );
+		restore_current_blog();
+	}
 }
