@@ -19,5 +19,6 @@ if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
 	"echo '<div class=\"error\"><p>" . __( 'WSUWP TLS requires PHP 5.3 to function properly. Please upgrade PHP or deactivate the plugin.', 'wsuwp-tls' ) . "</p></div>';" ) );
 	return;
 } else {
-	include_once __DIR__ . '/includes/class-wsuwp-tls.php';
+	include_once __DIR__ . '/includes/wsuwp-tls.php';
+	include_once __DIR__ . '/includes/wsuwp-tls-template.php';
 }
