@@ -3,32 +3,6 @@
 class WSUWP_TLS {
 
 	/**
-	 * Store the configuration used to generate CSRs with openSSL.
-	 *
-	 * @var array
-	 */
-	var $config = array(
-		'digest_alg' => 'sha256',
-		'private_key_bits' => '2048',
-		'private_key_type' => OPENSSL_KEYTYPE_RSA,
-	);
-
-	/**
-	 * Store the domain information added to each certificate request.
-	 *
-	 * @var array
-	 */
-	var $dn = array(
-		'countryName' => 'US',
-		'stateOrProvinceName' => 'Washington',
-		'localityName' => 'Pullman',
-		'organizationName' => 'Washington State University',
-		'organizationalUnitName' => 'University Communications',
-		'commonName' => '',
-		'emailAddress' => 'web.support@wsu.edu',
-	);
-
-	/**
 	 * Directory where staging files for certificate and config deployment
 	 * are located. The generated nginx config file lives here.
 	 *
