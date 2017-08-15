@@ -20,4 +20,5 @@ if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
 	return;
 } else {
 	include_once __DIR__ . '/includes/wsuwp-tls.php';
+	include_once __DIR__ . '/includes/wsuwp-tls-template.php';
 }
