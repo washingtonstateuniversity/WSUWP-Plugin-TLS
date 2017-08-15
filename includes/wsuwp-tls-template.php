@@ -8,6 +8,7 @@ namespace WSU\TLS\Template;
  * @since 1.0.0
  *
  * @param string $domain
+ * @return string Nginx configuration for the passed domain.
  */
 function single_site_default( $domain ) {
 	ob_start();
