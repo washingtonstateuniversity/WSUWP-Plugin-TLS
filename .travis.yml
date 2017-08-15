@@ -49,6 +49,7 @@ before_script:
     fi
   - |
     if [[ "$WP_TRAVISCI" == "grunt" ]] ; then
+      composer install
       nvm install stable
       npm install -g grunt-cli
       npm install
