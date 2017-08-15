@@ -172,7 +172,7 @@ class WSUWP_TLS {
 	public function tls_admin_menu( $parent_file ) {
 		global $self, $submenu, $submenu_file;
 
-		if ( get_network()->id == get_main_network_id() ) {
+		if ( get_network()->id === get_main_network_id() ) {
 			$submenu['sites.php'][15] = array(
 				'Manage Site TLS',
 				'manage_sites',
@@ -180,7 +180,7 @@ class WSUWP_TLS {
 			);
 		}
 
-		if ( isset( $_GET['display'] ) && 'tls' === $_GET['display'] ) {
+		if ( isset( $_GET['display'] ) && 'tls' === $_GET['display'] ) { // @codingStandardsIgnoreLine
 			$self = 'site-new.php?display=tls';
 			$parent_file = 'sites.php';
 			$submenu_file = 'site-new.php?display=tls';
@@ -249,7 +249,7 @@ class WSUWP_TLS {
 	public function tls_sites_display() {
 		global $title;
 
-		if ( ! isset( $_GET['display'] ) || 'tls' !== $_GET['display'] ) {
+		if ( ! isset( $_GET['display'] ) || 'tls' !== $_GET['display'] ) { // @codingStandardsIgnoreLine
 			return;
 		}
 
@@ -280,12 +280,12 @@ class WSUWP_TLS {
 					if ( 1 === count( $new_cert_alt_names ) ) {
 						$server_block_config = file_get_contents( dirname( __FILE__ ) . '/config/single-site-nginx-block.conf' );
 						$server_block_config = str_replace( '<% cert_domain %>', $new_cert_domain, $server_block_config );
-						$server_block_config = str_replace( '<% config_generated %>', date('Y-m-d H:i:s' ), $server_block_config );
+						$server_block_config = str_replace( '<% config_generated %>', date( 'Y-m-d H:i:s' ), $server_block_config );
 						$server_block_config = str_replace( '<% config_creator %>', $config_user->user_login, $server_block_config );
 					} elseif ( 2 <= count( $new_cert_alt_names ) ) {
 						$server_block_config = file_get_contents( dirname( __FILE__ ) . '/config/multi-site-nginx-block.conf' );
 						// Remove the primary CN domain from the list of alternate names.
-						foreach( $new_cert_alt_names as $k => $v ) {
+						foreach ( $new_cert_alt_names as $k => $v ) {
 							if ( $v === $new_cert_domain ) {
 								unset( $new_cert_alt_names[ $k ] );
 							}
@@ -293,7 +293,7 @@ class WSUWP_TLS {
 						$new_cert_alt_names = implode( ' ', $new_cert_alt_names );
 						$server_block_config = str_replace( '<% alt_domains %>', $new_cert_alt_names, $server_block_config );
 						$server_block_config = str_replace( '<% cert_domain %>', $new_cert_domain, $server_block_config );
-						$server_block_config = str_replace( '<% config_generated %>', date('Y-m-d H:i:s' ), $server_block_config );
+						$server_block_config = str_replace( '<% config_generated %>', date( 'Y-m-d H:i:s' ), $server_block_config );
 						$server_block_config = str_replace( '<% config_creator %>', $config_user->user_login, $server_block_config );
 					} else {
 						// Should only throw this error when 0 domains are passed for subjectAltName.
@@ -342,7 +342,7 @@ class WSUWP_TLS {
 					rename( $this->pending_cert_dir . $new_cert_domain . '.key', $this->to_deploy_dir . $new_cert_domain . '.key' );
 
 					// Set correct file permissions.
-					$stat = stat( dirname( $new_local_file ));
+					$stat = stat( dirname( $new_local_file ) );
 					$perms = $stat['mode'] & 0000666;
 					@chmod( $new_local_file, $perms );
 
@@ -355,7 +355,7 @@ class WSUWP_TLS {
 			}
 		}
 
-		$title = __('Manage Site TLS');
+		$title = __( 'Manage Site TLS' );
 
 		wp_enqueue_style( 'wsu-tls-style', plugins_url( '/css/style.css', __FILE__ ) );
 		wp_enqueue_script( 'wsu-tls', plugins_url( '/js/wsu-tls-site.min.js', __FILE__ ), array( 'backbone' ), wsuwp_global_version(), true );
@@ -364,13 +364,13 @@ class WSUWP_TLS {
 
 		?>
 		<div class="wrap wsu-manage-tls">
-			<h2 id="add-new-site"><?php _e('Manage Site TLS') ?></h2>
+			<h2 id="add-new-site"><?php esc_html_e( 'Manage Site TLS' ) ?></h2>
 			<p class="description">These sites have been configured on the WSUWP Platform, but do not yet have confirmed TLS configurations.</p>
 			<input id="tls_ajax_nonce" type="hidden" value="<?php echo esc_attr( wp_create_nonce( 'confirm-tls' ) ); ?>" />
 			<table class="form-table" style="width: 600px;">
 				<?php
 
-				foreach( $this->get_tls_disabled_domains() as $domain ) {
+				foreach ( $this->get_tls_disabled_domains() as $domain ) {
 					// The default action status is to allow a CSR to be generated.
 					$action_text = 'Generate CSR';
 					$action_class = 'no_action';
@@ -394,10 +394,10 @@ class WSUWP_TLS {
 					}
 
 					?>
-					<tr id="<?php echo md5( $domain ); ?>">
+					<tr id="<?php echo esc_attr( md5( $domain ) ); ?>">
 						<td><?php echo esc_html( $domain ); ?></td>
 						<td class="tls-table-action">
-							<span data-domain="<?php echo esc_attr( $domain ); ?>" class="<?php echo $action_class; ?>"><?php echo $action_text; ?></span>
+							<span data-domain="<?php echo esc_attr( $domain ); ?>" class="<?php echo esc_attr( $action_class ); ?>"><?php echo esc_html( $action_text ); ?></span>
 						</td>
 						<td class="tls-table-remove">
 							<span data-domain="<?php echo esc_attr( $domain ); ?>" class="confirm_tls">Remove</span>
@@ -473,7 +473,7 @@ class WSUWP_TLS {
 				$domain_sites = $wpdb->get_results( $wpdb->prepare( "SELECT domain, path FROM $wpdb->blogs WHERE domain = %s", $_POST['domain'] ) );
 
 				// Clear site cache on each confirmed domain.
-				foreach( $domain_sites as $cached_site ) {
+				foreach ( $domain_sites as $cached_site ) {
 					wp_cache_delete( $cached_site->domain . $cached_site->path, 'wsuwp:site' );
 				}
 
@@ -489,15 +489,21 @@ class WSUWP_TLS {
 					@rename( $this->deployed_dir . $_POST['domain'] . '.cer', $this->complete_dir . $_POST['domain'] . '.cer' );
 				}
 
-				$response = json_encode( array( 'success' => $_POST['domain'] ) );
+				$response = wp_json_encode( array(
+					'success' => $_POST['domain'],
+				) );
 			} else {
-				$response = json_encode( array( 'error' => 'The domain passed was valid, but confirmation was not successful.' ) );
+				$response = wp_json_encode( array(
+					'error' => 'The domain passed was valid, but confirmation was not successful.',
+				) );
 			}
 		} else {
-			$response = json_encode( array( 'error' => 'The domain passed for confirmation is not valid.' ) );
+			$response = wp_json_encode( array(
+				'error' => 'The domain passed for confirmation is not valid.',
+			) );
 		}
 
-		echo $response;
+		echo $response; // @codingStandardsIgnoreLine
 		die();
 	}
 
@@ -518,7 +524,9 @@ class WSUWP_TLS {
 			$csr_result = $this->generate_csr( $_POST['domain'] );
 
 			if ( true !== $csr_result ) {
-				$response = json_encode( array( 'error' => $csr_result ) );
+				$response = wp_json_encode( array(
+					'error' => $csr_result,
+				) );
 			} else {
 				$option_name = trim( $_POST['domain'] ) . '_ssl_disabled';
 				switch_to_blog( 1 );
@@ -526,17 +534,21 @@ class WSUWP_TLS {
 				restore_current_blog();
 
 				// Clear site cache on each unconfirmed domain.
-				foreach( $domain_sites as $cached_site ) {
+				foreach ( $domain_sites as $cached_site ) {
 					wp_cache_delete( $cached_site->domain . $cached_site->path, 'wsuwp:site' );
 				}
 
-				$response = json_encode( array( 'success' => trim( $_POST['domain'] ) ) );
+				$response = wp_json_encode( array(
+					'success' => trim( $_POST['domain'] ),
+				) );
 			}
 		} else {
-			$response = json_encode( array( 'error' => 'Invalid domain.' ) );
+			$response = wp_json_encode( array(
+				'error' => 'Invalid domain.',
+			) );
 		}
 
-		echo $response;
+		echo $response; // @codingStandardsIgnoreLine
 		die();
 	}
 
@@ -548,12 +560,16 @@ class WSUWP_TLS {
 
 		if ( true === $this->validate_domain( $_POST['domain'] ) && file_exists( $this->pending_cert_dir . $_POST['domain'] . '.csr' ) ) {
 			$csr_data = file_get_contents( $this->pending_cert_dir . $_POST['domain'] . '.csr' );
-			$response = json_encode( array( 'success' => $csr_data ) );
+			$response = wp_json_encode( array(
+				'success' => $csr_data,
+			) );
 		} else {
-			$response = json_encode( array( 'error' => 'No CSR is available for this domain.' ) );
+			$response = wp_json_encode( array(
+				'error' => 'No CSR is available for this domain.',
+			) );
 		}
 
-		echo $response;
+		echo $response; // @codingStandardsIgnoreLine
 		die();
 	}
 
@@ -567,20 +583,28 @@ class WSUWP_TLS {
 		if ( true === $this->validate_domain( $_POST['domain'] ) ) {
 			$tls_response = wp_remote_get( 'https://' . $_POST['domain'] );
 			if ( is_wp_error( $tls_response ) ) {
-				$response = json_encode( array( 'success' => '<p>https://' . $_POST['domain'] . ' did not respond to a connection attempt. You may want to check manually.</p>' ) );
+				$response = wp_json_encode( array(
+					'success' => '<p>https://' . $_POST['domain'] . ' did not respond to a connection attempt. You may want to check manually.</p>',
+				) );
 			} else {
 				$tls_response = wp_remote_retrieve_headers( $tls_response );
 				if ( empty( $tls_response ) ) {
-					$response = json_encode( array( 'success' => '<p>https://' . $_POST['domain'] . ' responded, but no headers were returned. Check the HTTPS connection manually.</p>' ) );
+					$response = wp_json_encode( array(
+						'success' => '<p>https://' . $_POST['domain'] . ' responded, but no headers were returned. Check the HTTPS connection manually.</p>',
+					) );
 				} else {
-					$response = json_encode( array( 'success' => '<p>https://' . $_POST['domain'] . ' responded to an HTTPS connection and can be removed from the list.</p>' ) );
+					$response = wp_json_encode( array(
+						'success' => '<p>https://' . $_POST['domain'] . ' responded to an HTTPS connection and can be removed from the list.</p>',
+					) );
 				}
 			}
 		} else {
-			$response = json_encode( array( 'success' => '<p>Invalid domain passed, unable to check HTTPS connecton.</p>' ) );
+			$response = wp_json_encode( array(
+				'success' => '<p>Invalid domain passed, unable to check HTTPS connecton.</p>',
+			) );
 		}
 
-		echo $response;
+		echo $response; // @codingStandardsIgnoreLine
 		die();
 	}
 
