@@ -14,17 +14,17 @@ function single_site_default( $domain ) {
 	?>
 server {
 	listen 80;
-	server_name <% cert_domain %>;
-	return 301 https://<% cert_domain %>$request_uri;
+	server_name <?php echo esc_attr( $domain ); ?>;
+	return 301 https://<?php echo esc_attr( $domain ); ?>$request_uri;
 }
 
 server {
-	server_name <% cert_domain %>;
+	server_name <?php echo esc_attr( $domain ); ?>;
 
 	include /etc/nginx/wsuwp-common-header.conf;
 
-	ssl_certificate      /etc/letsencrypt/live/<?php echo $domain; ?>/fullchain.pem;
-	ssl_certificate_key /etc/letsencrypt/live/<?php echo $domain; ?>/privkey.pem;
+	ssl_certificate      /etc/letsencrypt/live/<?php echo esc_attr( $domain ); ?>/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/<?php echo esc_attr( $domain ); ?>/privkey.pem;
 
 	include /etc/nginx/wsuwp-ssl-common.conf;
 	include /etc/nginx/wsuwp-common.conf;
