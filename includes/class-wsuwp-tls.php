@@ -1,12 +1,4 @@
 <?php
-/*
-Plugin Name: WSUWP TLS
-Version: 0.4.5
-Plugin URI: https://web.wsu.edu/
-Description: Manage TLS within the WSUWP Platform
-Author: washingtonstateuniversity, jeremyfelt
-Author URI: https://web.wsu.edu/
-*/
 
 class WSUWP_TLS {
 
