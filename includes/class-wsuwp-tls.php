@@ -99,7 +99,7 @@ class WSUWP_TLS {
 	public function __construct() {
 		add_action( 'admin_init', array( $this, 'setup_directories' ), 10 );
 		add_action( 'wpmu_new_blog', array( $this, 'determine_new_site_tls' ), 10, 3 );
-		add_filter( 'parent_file', array( $this, 'tls_admin_menu' ), 11, 1 );
+
 		add_action( 'load-site-new.php', array( $this, 'tls_sites_display' ), 1 );
 	}
 
@@ -143,37 +143,6 @@ class WSUWP_TLS {
 			update_option( $domain . '_ssl_disabled', 1 );
 			restore_current_blog();
 		}
-	}
-
-	/**
-	 * Filter the submenu global to add a 'Manage Site TLS' link for the primary network.
-	 *
-	 * @global string $self
-	 * @global array  $submenu
-	 * @global string $submenu_file
-	 *
-	 * @param string $parent_file Parent file of a menu subsection.
-	 *
-	 * @return string Parent file of a menu subsection.
-	 */
-	public function tls_admin_menu( $parent_file ) {
-		global $self, $submenu, $submenu_file;
-
-		if ( get_network()->id === get_main_network_id() ) {
-			$submenu['sites.php'][15] = array(
-				'Manage Site TLS',
-				'manage_sites',
-				'site-new.php?display=tls',
-			);
-		}
-
-		if ( isset( $_GET['display'] ) && 'tls' === $_GET['display'] ) { // @codingStandardsIgnoreLine
-			$self = 'site-new.php?display=tls';
-			$parent_file = 'sites.php';
-			$submenu_file = 'site-new.php?display=tls';
-		}
-
-		return $parent_file;
 	}
 
 	/**
