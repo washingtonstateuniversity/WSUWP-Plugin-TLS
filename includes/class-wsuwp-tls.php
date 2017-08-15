@@ -350,7 +350,7 @@ class WSUWP_TLS {
 		$title = __( 'Manage Site TLS' );
 
 		wp_enqueue_style( 'wsu-tls-style', plugins_url( '/css/style.css', dirname( __FILE__ ) ) );
-		wp_enqueue_script( 'wsu-tls', plugins_url( '/js/wsu-tls-site.min.js', dirname(__FILE__ ) ), array( 'backbone' ), wsuwp_global_version(), true );
+		wp_enqueue_script( 'wsu-tls', plugins_url( '/js/wsu-tls-site.min.js', dirname( __FILE__ ) ), array( 'backbone' ), wsuwp_global_version(), true );
 
 		require( ABSPATH . 'wp-admin/admin-header.php' );
 
